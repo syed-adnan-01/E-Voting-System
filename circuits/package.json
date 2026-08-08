@@ -1,0 +1,11 @@
+{
+  "name": "pq-zkvote-circuits",
+  "version": "0.1.0",
+  "description": "Circom circuits and witness utilities for PQ-ZKVote",
+  "main": "merkle.js",
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "snarkjs": "^0.7.6"
+  }
+}
