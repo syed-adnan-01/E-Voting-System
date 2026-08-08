@@ -70,22 +70,32 @@ Produce an open, rerunnable benchmark comparing proof size, generation time, ver
 
 ```
 Voter Client → Registrar Service → Smart Contract / Ledger
-                                          │
-                          ┌───────────────┴───────────────┐
-                    Tallying Service              Anomaly Monitor
-                          │                                │
-                          └───────────────┬───────────────┘
-                                     Dashboard
+     ↑                 ↑                    │
+     └── Admin Panel ──┘      ┌─────────────┴───────────────┐
+                          Tallying Service              Anomaly Monitor
+                                │                                │
+                                └───────────────┬───────────────┘
+                                           Dashboard
 ```
 
-- **Voter client**: builds ZK proof locally, submits proof + nullifier + encrypted vote.
-- **Registrar service**: issues signed eligibility credentials (prototype-grade, not a full PKI).
+- **Voter client**: generates the voter's secret locally (never transmitted), builds ZK proof, submits proof + nullifier + encrypted vote. Includes a credential management UI — registration status, receipt lookup, and a mandatory backup/recovery prompt for the locally-generated secret (see §8.1).
+- **Admin panel**: lets an election admin create voting events, review and approve pending voter registrations (commitments only — never secrets), open/close the election, and view results and anomaly flags.
+- **Registrar service**: approves voter commitments into an eligibility Merkle tree — never generates or sees a voter's secret, so it cannot de-anonymize a vote even if compromised.
 - **Smart contract**: verifies proof on-chain, enforces nullifier uniqueness, records votes immutably.
 - **Tallying service**: aggregates verified votes into a final, publicly auditable count.
 - **Anomaly monitor**: scores vote metadata with Isolation Forest, flags irregularities for human review (never auto-rejects — prevents false positives from disenfranchising voters).
 - **Dashboard**: live tally, anomaly feed, public audit log.
 
 *(Colour convention used in the architecture diagram: gray = user-facing components, purple = backend trust layer where verification, aggregation, and monitoring happen.)*
+
+### 8.1 Voter Credential UI (new)
+
+Because the voter's secret is generated on-device and never recoverable by any server, the voter client needs a dedicated local key-management flow — closer to a crypto wallet than a login screen:
+
+- **Registration screen**: collects identity proof, generates the secret + commitment locally, submits only the commitment
+- **Status screen**: shows `pending` / `approved` / `rejected`
+- **Backup/recovery prompt**: a mandatory one-time screen (downloadable keyfile or recovery phrase) warning that a lost secret cannot be reissued or recovered by anyone — a deliberate, documented usability tradeoff of the anonymity guarantee
+- **Post-vote receipt screen**: shows the receipt hash and an "am I counted?" lookup against the public ledger
 
 ---
 
@@ -110,7 +120,7 @@ Voter Client → Registrar Service → Smart Contract / Ledger
 | 0 | Literature grounding, threat model | Week 1 |
 | 1 | Classical ZK circuit (circom/snarkjs) | Weeks 2–4 |
 | 2 | Smart contract + nullifier registry | Weeks 4–5 |
-| 3 | Registrar + voter client | Weeks 5–6 |
+| 3 | Registrar + admin panel + voter client (with credential UI) | Weeks 5–6 |
 | 4 | Anomaly detection pipeline | Weeks 6–7 |
 | 5 | Lattice-based PQC proving track | Weeks 7–9 |
 | 6 | Classical-vs-PQC benchmark suite | Week 9 |
@@ -141,6 +151,7 @@ Fully buildable at **$0** using free, open-source tooling (circom, snarkjs, Hard
 - Coercion-resistance and receipt-freeness are out of scope (note: MACI specifically targets this — worth citing as future-work direction rather than re-solving it here).
 - "Post-quantum secure" applies specifically to the lattice-based proving track — the classical track, included for benchmarking comparison, is not.
 - No formal third-party security audit — appropriate to disclose for a prototype/academic project.
+- Credential recovery is unsupported by design: a voter who loses their locally-generated secret cannot be reissued one without either allowing double-voting or breaking anonymity — a known, documented tradeoff of this architecture, not an oversight.
 - Novelty claims are scoped to "this specific combination of techniques," not "first ZK voting system" — the space is active and real prior art exists (Semaphore, MACI, ElectAnon, zkVoting, and multiple academic prototypes).
 
 ---

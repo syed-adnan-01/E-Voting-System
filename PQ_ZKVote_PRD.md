@@ -53,7 +53,7 @@ There is no existing project — academic or production — that does both: a wo
 | Persona | Need |
 |---|---|
 | **Voter** | Cast a vote quickly, be confident it's private and counted correctly, get a verifiable receipt |
-| **Election admin/registrar** | Onboard eligible voters, open/close the election, view results and flagged anomalies |
+| **Election admin** | Create voting events, review and approve pending voter registrations, open/close the election, view results and flagged anomalies — all via an admin panel |
 | **Auditor/reviewer** (e.g., an instructor, evaluator, or curious third party) | Independently verify the tally and re-run the benchmark suite without trusting the author's claims |
 | **Anomaly reviewer** | See flagged (not auto-rejected) suspicious votes and decide whether to investigate further |
 
@@ -61,33 +61,46 @@ There is no existing project — academic or production — that does both: a wo
 
 ## 6. Functional Requirements
 
-### 6.1 Voter Registration
-- FR1.1: System shall allow a registrar to add an eligible voter's identity commitment to a Merkle tree of eligible voters.
-- FR1.2: System shall issue the voter a signed credential usable for exactly one election.
-- FR1.3: System shall expose the current Merkle root and the voter's Merkle path for proof generation.
+### 6.1 Admin Panel & Election Management
+- FR0.1: Admin panel shall allow an authenticated admin to create a voting event (name, candidate list, open/close dates).
+- FR0.2: Admin panel shall allow an admin to define or upload the eligible-voter roster for identity verification purposes.
+- FR0.3: Admin panel shall display a queue of pending voter registrations (commitment + identity proof only — never a secret) for approval or rejection.
+- FR0.4: Admin panel shall allow the admin to open and close the election, gating the smart contract's `submitVote`/`closeElection` accordingly.
+- FR0.5: Admin authentication shall be separate from the voter flow and shall never require or store a voter's secret.
 
-### 6.2 Vote Casting
+### 6.2 Voter Registration
+- FR1.1: Voter client shall generate the voter's secret locally, on-device — the secret shall never be transmitted over the network in any form.
+- FR1.2: Voter client shall compute a commitment (hash of the secret) and submit only the commitment, plus out-of-scope identity proof, to the registrar.
+- FR1.3: System shall add an admin-approved commitment as a leaf in the eligible-voters Merkle tree for that election.
+- FR1.4: System shall expose the current Merkle root and the voter's Merkle path for proof generation.
+- FR1.5: No registrar, admin, or system component shall store or have access to a mapping between a voter's real identity and their secret.
+- FR1.6: Voter client shall display registration status (`pending` / `approved` / `rejected`) to the voter.
+- FR1.7: Voter client shall present a mandatory, one-time backup/recovery prompt immediately after secret generation, offering a downloadable keyfile or written recovery phrase, and shall clearly warn the voter that a lost secret cannot be recovered or reissued by any party.
+- FR1.8: Voter client shall not allow the voter to proceed to vote casting without having passed through the backup/recovery prompt at least once.
+
+### 6.3 Vote Casting
 - FR2.1: Voter client shall generate a zero-knowledge proof, client-side, demonstrating: (a) valid credential membership, (b) vote value within the valid candidate range, (c) correctly derived nullifier — without revealing the credential secret or the vote value.
 - FR2.2: System shall support two interchangeable proof types: classical (Groth16) and lattice-based (post-quantum), selected via a proof-type flag.
 - FR2.3: Smart contract shall verify the submitted proof and reject invalid proofs.
 - FR2.4: Smart contract shall reject any vote whose nullifier has already been used (double-vote prevention).
 - FR2.5: Voter shall receive a receipt hash confirming submission, without revealing their vote choice in that receipt.
+- FR2.6: Voter client shall provide a way for the voter to look up their receipt hash against the public ledger to confirm inclusion.
 
-### 6.3 Tallying
+### 6.4 Tallying
 - FR3.1: System shall aggregate all valid recorded votes into a final per-candidate count after the election is closed by an admin.
 - FR3.2: Tally results shall be independently re-verifiable against the public on-chain record.
 
-### 6.4 Anomaly Detection
+### 6.5 Anomaly Detection
 - FR4.1: System shall extract a feature vector per vote submission (timestamp, verification latency, gas price, submission interval, etc.).
 - FR4.2: System shall score each vote's feature vector using a trained Isolation Forest model.
 - FR4.3: Flagged (anomalous) votes shall be surfaced for human review, never automatically rejected.
 - FR4.4: Anomaly detection performance shall be evaluated on a held-out test set with documented methodology (precision, recall, F1, ROC-AUC).
 
-### 6.5 Benchmarking
+### 6.6 Benchmarking
 - FR5.1: System shall include a scripted benchmark suite measuring proof generation time, verification time, proof size, and gas cost for both proving tracks.
 - FR5.2: Benchmark results shall be reproducible by re-running a single script, with no manually-entered numbers in the final report.
 
-### 6.6 Dashboard
+### 6.7 Dashboard
 - FR6.1: Dashboard shall display live tally counts, total votes cast, and anomaly alerts.
 - FR6.2: Dashboard shall display a public audit log of on-chain transactions (hashes, timestamps) with no voter-identifying information.
 
@@ -98,11 +111,13 @@ There is no existing project — academic or production — that does both: a wo
 | Category | Requirement |
 |---|---|
 | Security | No component shall store or transmit a voter's raw credential secret or plaintext vote choice off the client device |
+| Separation of duties | The admin panel shall never require, accept, or store a voter's secret — only commitments — so that even a fully compromised admin account cannot de-anonymize a vote |
 | Privacy | Anomaly-detection features shall be hashed or bucketed where they could otherwise identify a voter (e.g., session metadata) |
 | Reproducibility | Every performance or accuracy claim in the final report must trace to a script in the repository |
 | Usability | A new user shall be able to run the full demo end-to-end from the README within 15 minutes |
 | Cost | Entire system shall be buildable and runnable at $0 using free/open-source tooling and local/testnet deployment only |
 | Auditability | All votes and tally results shall be publicly verifiable on-chain without trusting a central authority's word |
+| Recoverability (explicit non-guarantee) | The system shall not attempt to provide credential recovery — this is a stated design tradeoff, and the UI shall communicate it clearly rather than implying recovery is possible |
 
 ---
 
@@ -139,6 +154,7 @@ There is no existing project — academic or production — that does both: a wo
 |---|---|---|
 | M1 — Classical ZK circuit working | Week 4 | Valid/invalid proofs correctly verified locally |
 | M2 — Smart contract + tests passing | Week 5 | Full Hardhat test suite green |
+| M2.5 — Admin panel functional | Week 6 | Admin can create an event, approve a pending registration, and close an election |
 | M3 — First end-to-end vote cast | Week 6 | One vote from UI to chain, confirmed |
 | M4 — Anomaly model evaluated | Week 7 | Metrics on held-out test set, documented |
 | M5 — PQC proving track working | Week 9 | Same pos/neg proof tests passing on lattice track |
@@ -157,6 +173,7 @@ There is no existing project — academic or production — that does both: a wo
 | Anomaly model overfits synthetic data | Medium | Strict train/test separation, no tuning against test metrics |
 | Scope creep toward solving coercion-resistance / full PKI | High | Revisit Non-Goals list at the end of every phase |
 | Benchmark numbers not independently reproducible | Medium | All numbers generated by committed scripts, never hand-recorded |
+| Voters lose their locally-stored secret with no recovery path | Medium | Mandatory backup/recovery prompt at registration (FR1.7); document as a known, intentional tradeoff rather than a bug |
 
 ---
 
@@ -172,4 +189,4 @@ There is no existing project — academic or production — that does both: a wo
 
 To be included verbatim (or adapted) in the final project documentation:
 
-> This is a prototype system. The registrar is a simplified credential issuer, not a production identity/PKI system. Coercion-resistance and receipt-freeness are not addressed. "Post-quantum secure" applies specifically to the lattice-based proving track; the classical track, included for benchmarking comparison, is not post-quantum secure. No formal third-party security audit has been performed. This project's novelty claim is scoped to combining post-quantum ZK proving with ML-based anomaly detection in a single integrated architecture — not to being the first zero-knowledge e-voting system, as real prior art (Semaphore, MACI, ElectAnon, zkVoting) exists and is cited accordingly.
+> This is a prototype system. The registrar is a simplified credential issuer, not a production identity/PKI system. Coercion-resistance and receipt-freeness are not addressed. "Post-quantum secure" applies specifically to the lattice-based proving track; the classical track, included for benchmarking comparison, is not post-quantum secure. Credential recovery is intentionally unsupported: a voter's secret exists only on their device, and a lost secret cannot be recovered or reissued by any party without either allowing double-voting or compromising anonymity. No formal third-party security audit has been performed. This project's novelty claim is scoped to combining post-quantum ZK proving with ML-based anomaly detection in a single integrated architecture — not to being the first zero-knowledge e-voting system, as real prior art (Semaphore, MACI, ElectAnon, zkVoting) exists and is cited accordingly.

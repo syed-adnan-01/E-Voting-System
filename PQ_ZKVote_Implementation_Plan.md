@@ -13,6 +13,7 @@ pq-zkvote/
 ├── lattice/            # lattice-based PQC proving track
 ├── contracts/          # Solidity smart contracts
 ├── registrar/          # registrar service
+├── admin/               # admin panel (event creation, registration approval)
 ├── tally/               # tallying service
 ├── anomaly/             # ML anomaly detection pipeline
 ├── client/               # voter-facing React app
@@ -117,20 +118,38 @@ npx hardhat test
 
 ---
 
-## Phase 3 — Registrar & Voter Client (Weeks 5–6)
+## Phase 3 — Registrar, Admin Panel & Voter Client (Weeks 5–6)
+
+*Design rule for this phase: the admin panel and registrar only ever handle commitments (hashes) from voters, never secrets. If you find yourself building an endpoint that accepts a raw secret from the network, stop — that's the wrong design (see architecture.md §4.1).*
 
 ### 3.1 Registrar service (`registrar/`)
-- [ ] `POST /register` — accepts a pre-vetted voter ID, returns a signed credential + adds commitment to the Merkle tree
+- [ ] `POST /events` (admin-only) — creates a voting event: `{name, candidates, open_at, close_at}` → `{election_id}`
+- [ ] `POST /register` — accepts `{election_id, commitment, proof_of_identity}` from the voter client, stores it as `status: "pending"`
+- [ ] `GET /registrations/:election_id` (admin-only) — lists pending/approved/rejected registrations
+- [ ] `POST /registrations/:commitment/approve` (admin-only) — adds the commitment as a leaf in the Merkle tree, marks approved
+- [ ] `POST /registrations/:commitment/reject` (admin-only)
 - [ ] `GET /merkle-root/:election_id` — returns current root for the client to fetch
-- [ ] `GET /merkle-path/:commitment` — returns the Merkle path needed for proof generation
-- [ ] Store the tree in a simple local DB (SQLite is enough for a prototype)
+- [ ] `GET /merkle-path/:commitment` — returns the Merkle path needed for proof generation (only for approved commitments)
+- [ ] Store events, registrations, and the tree in a simple local DB (SQLite is enough for a prototype)
+- [ ] Admin-only endpoints gated by simple auth (a shared admin token/login is enough for a prototype — separate from anything in the voter flow)
 
-### 3.2 Voter client (`client/`)
-- [ ] Candidate selection screen
+### 3.2 Admin panel (`admin/`)
+- [ ] Login screen for the admin (simple auth, prototype-grade)
+- [ ] "Create event" form → calls `POST /events`
+- [ ] Pending registrations queue → approve/reject buttons calling the registrar's admin endpoints
+- [ ] "Close election" button → calls the registrar, which in turn calls the contract's `closeElection()`
+- [ ] Results view + anomaly flag list (can reuse components from the Phase 7 dashboard once anomaly monitor exists — build the layout now, wire live data later)
+
+### 3.3 Voter client (`client/`)
+- [ ] On first use: generate a random secret locally (`crypto.getRandomValues` in-browser or equivalent), store it in local storage/IndexedDB — **never send this to any server**
+- [ ] Compute `commitment = hash(secret)`, submit `{election_id, commitment, proof_of_identity}` to `POST /register`
+- [ ] Registration status screen: `pending` / `approved` / `rejected`, polling or refreshing from the registrar
+- [ ] Backup/recovery screen: shown once, right after secret generation — offer a downloadable encrypted keyfile or a written recovery phrase, with a clear warning that a lost secret cannot be recovered or reissued
+- [ ] Candidate selection screen (available once registration shows `approved`)
 - [ ] On submit: fetch Merkle path from registrar → generate proof client-side (snarkjs.js in-browser, using the WASM witness calculator and zkey) → submit `{proof, publicSignals, nullifierHash, encryptedVote}` to the contract via ethers.js/web3.js
-- [ ] Show a receipt hash to the voter (hash of their submission — not their choice) for later inclusion verification
+- [ ] Post-vote receipt screen: show a receipt hash (hash of their submission — not their choice) plus a lookup against the public ledger to confirm inclusion
 
-**Acceptance criteria**: one full manual vote cast from the UI, confirmed on-chain via Hardhat console or a block explorer (Etherscan-style tools work against local Hardhat too).
+**Acceptance criteria**: an admin can create an event from the admin panel; a voter can register (commitment only, verified by inspecting network traffic that no secret ever left the browser), get approved by the admin, and cast one full vote from the UI — confirmed on-chain via Hardhat console or a block explorer.
 
 ---
 
@@ -252,7 +271,7 @@ For both proving systems, measure:
 | 0 | 1 | Repo + docs skeleton |
 | 1 | 2–4 | Working classical ZK circuit |
 | 2 | 4–5 | Smart contract + tests |
-| 3 | 5–6 | Registrar + voter client, first end-to-end vote |
+| 3 | 5–6 | Registrar + admin panel + voter client, first end-to-end vote |
 | 4 | 6–7 | Evaluated anomaly detection model |
 | 5 | 7–9 | Working lattice-based PQC proving track |
 | 6 | 9 | Reproducible classical-vs-PQC benchmark suite |
