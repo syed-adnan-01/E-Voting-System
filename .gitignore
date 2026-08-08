@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment & local settings
+.env
+.env.local
+
+# Circom & ZK build outputs
+build/
+*.r1cs
+*.wasm
+*.zkey
+*.sym
+*.ptau
+verification_key.json
+public.json
+proof.json
+
+# Hardhat & Solidity artifacts
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+
+# IDE & OS
+.DS_Store
+.vscode/
+.idea/
+
+# Local binaries
+bin/circom

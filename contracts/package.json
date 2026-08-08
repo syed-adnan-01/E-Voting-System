@@ -1,0 +1,17 @@
+{
+  "name": "pq-zkvote-contracts",
+  "version": "0.1.0",
+  "description": "Smart contracts and verification logic for PQ-ZKVote",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "snarkjs": "^0.7.6"
+  }
+}
