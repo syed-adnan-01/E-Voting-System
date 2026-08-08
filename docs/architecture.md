@@ -16,8 +16,9 @@ PQ-ZKVote lets a voter prove they are eligible and that their vote is well-forme
 
 | Component | Responsibility | Key Technology |
 |---|---|---|
-| Voter client | Collects vote choice, builds ZK proof locally, submits to chain | React + snarkjs (browser) or CLI |
-| Registrar service | Verifies voter eligibility, issues signed credential, manages the Merkle tree of eligible voters | Python/FastAPI or Node/Express |
+| Voter client | Generates secret + commitment locally, collects vote choice, builds ZK proof, submits to chain | React + snarkjs (browser) or CLI |
+| Admin panel | Lets a registrar/admin create voting events, review and approve pending registrations, open/close elections, view results and anomaly flags | React, admin-only auth (e.g. simple login for the admin, separate from voter flow) |
+| Registrar service | Verifies voter eligibility, approves voter commitments, manages the Merkle tree of eligible voters — never generates or sees voter secrets | Python/FastAPI or Node/Express |
 | ZK proving — classical track | Defines and proves the "valid vote + valid credential" constraint system | circom + snarkjs (Groth16) |
 | ZK proving — post-quantum track | Same constraint system, proved via a lattice-based (Ring-LWE) Σ-protocol | Custom implementation, Python/Rust |
 | Smart contract / ledger | On-chain proof verification, vote storage, nullifier registry | Solidity on Hardhat (local/testnet) |
@@ -30,18 +31,22 @@ PQ-ZKVote lets a voter prove they are eligible and that their vote is well-forme
 ## 3. System Diagram (Component Flow)
 
 ```
-                        ┌────────────────┐
-                        │  Voter client   │
-                        │ Builds & submits│
-                        │     proof       │
-                        └────────┬────────┘
-                                 │
-                        ┌────────▼────────┐
-                        │ Registrar service│
-                        │ Verifies voter   │
-                        │  eligibility     │
-                        └────────┬────────┘
-                                 │
+                        ┌────────────────┐        ┌────────────────┐
+                        │  Voter client   │        │  Admin panel    │
+                        │ Generates secret,│        │ Creates events, │
+                        │ builds & submits │        │ approves voters │
+                        │     proof        │        └────────┬────────┘
+                        └────────┬────────┘                 │
+                                 │  commitment only          │
+                                 └─────────────┬─────────────┘
+                                                │
+                        ┌───────────────────────▼────────┐
+                        │        Registrar service         │
+                        │ Approves commitments, builds     │
+                        │   the eligible-voters tree        │
+                        │  (never sees a voter's secret)    │
+                        └────────────────┬─────────────────┘
+                                          │
                         ┌────────▼────────┐
                         │  Smart contract  │
                         │ Verifies proof,  │
@@ -70,10 +75,20 @@ PQ-ZKVote lets a voter prove they are eligible and that their vote is well-forme
 ## 4. Data Flow
 
 ### 4.1 Pre-voting phase
-1. Voter authenticates to the registrar (prototype-grade: a pre-loaded eligible-voter list with signed tokens — not a full identity system).
-2. Registrar issues a signed credential: `{voter_commitment, election_id, signature}`.
-3. Registrar adds `voter_commitment` as a leaf in the eligible-voters Merkle tree.
-4. Voter stores the credential locally — it is never transmitted to the chain in plaintext.
+
+**Admin side (once per election):**
+1. Admin logs into the admin panel and creates a voting event: name, candidate list, open/close dates.
+2. Admin uploads or defines the eligible-voter roster (out of scope: how real-world identity is verified — assume a pre-vetted list, e.g. student/employee IDs).
+3. Election event is created in a "pending registration" state.
+
+**Voter side (once per election, before voting opens):**
+1. Voter's device generates a random secret **locally** — this never leaves the device.
+2. Device computes `commitment = hash(secret)` and sends **only the commitment**, plus their out-of-scope identity proof, to the registrar. The secret itself is never transmitted.
+3. Admin reviews the pending registration in the admin panel and approves it (confirming the person is on the eligible roster).
+4. On approval, the registrar adds `commitment` as a leaf in the eligible-voters Merkle tree for that election.
+5. Voter's device retains the secret locally for use at voting time — it is the only thing needed to vote, and nobody else (not the admin, not the registrar) ever has a copy of it.
+
+This is the important design choice: **the admin approves an identity↔eligibility check, never an identity↔secret mapping.** Nothing server-side ever links a real name to a voting secret, which is what makes the anonymity guarantee hold even if the registrar's database were later compromised.
 
 ### 4.2 Voting phase
 1. Voter selects a candidate in the client.
@@ -93,13 +108,27 @@ PQ-ZKVote lets a voter prove they are eligible and that their vote is well-forme
 ## 5. Component Details
 
 ### Voter client
+- Generates the voter's secret locally, on first registration — this value never leaves the device.
 - Loads proving artifacts (WASM + zkey for classical; parameter files for lattice-based) client-side.
-- Never sends the raw vote or credential secret over the network — only the proof and public signals leave the device.
+- Never sends the raw vote or secret over the network — only the commitment (at registration) and the proof + public signals (at voting time) leave the device.
 - Displays a receipt hash (of the submission, not the vote choice) so the voter can later verify inclusion.
+- **Credential UI** (local key management, not a login flow):
+  - Registration screen: collects identity proof, generates secret + commitment locally
+  - Status screen: `pending` / `approved` / `rejected`
+  - Backup/recovery prompt: mandatory one-time screen (downloadable keyfile or recovery phrase) — a lost secret cannot be reissued by anyone, since no server ever holds a copy; this is a deliberate tradeoff to document, not a bug
+  - Post-vote receipt screen: receipt hash + inclusion lookup against the public ledger
+
+### Admin panel
+- Admin-only interface (separate auth from the voter flow — a simple login is acceptable for a prototype since the admin isn't part of the anonymity guarantee).
+- Creates voting events (name, candidates, open/close dates) and defines the eligible-voter roster.
+- Shows a queue of pending voter registrations (commitment + identity proof, never a secret) for the admin to approve or reject.
+- Triggers `closeElection()` on the smart contract.
+- Displays live results and surfaces anomaly flags for review.
 
 ### Registrar service
-- Issues credentials from a pre-vetted eligible-voter list; maintains the Merkle tree and exposes root/path lookups.
-- Explicitly a prototype component, not a production identity system — documented as such in the project's limitations.
+- Receives voter commitments (never secrets) plus out-of-scope identity proof, holds them pending admin approval.
+- On admin approval, adds the commitment as a leaf in the eligible-voters Merkle tree and exposes root/path lookups.
+- Explicitly a prototype component, not a production identity system — documented as such in the project's limitations. Its key security property, by design, is that it never has the information needed to de-anonymize a vote, even if compromised.
 
 ### ZK proving — classical track
 - Circuit constraints: vote-range check, nullifier derivation correctness, Merkle membership proof.
@@ -131,6 +160,8 @@ PQ-ZKVote lets a voter prove they are eligible and that their vote is well-forme
 
 | Entity | Fields | Notes |
 |---|---|---|
+| `VotingEvent` | `election_id`, `name`, `candidates`, `open_at`, `close_at`, `status` | Created by admin, stored by registrar |
+| `RegistrationRequest` | `commitment`, `identity_proof_ref`, `status` (pending/approved/rejected) | Never contains a voter secret; reviewed in the admin panel |
 | `Credential` | `voter_commitment`, `election_id`, `registrar_signature` | Held client-side only |
 | `Nullifier` | `nullifier_hash`, `used` (bool), `block_number` | Stored on-chain |
 | `VoteRecord` | `nullifier_hash`, `encrypted_vote`, `proof_hash`, `proof_type`, `timestamp` | Stored on-chain, publicly readable |
@@ -145,10 +176,16 @@ No entity in this model links a `VoteRecord` back to a specific voter identity �
 
 **Registrar service**
 ```
-POST /register                     { voter_id, proof_of_identity } → { credential }
-GET  /merkle-root/:election_id     → { root }
-GET  /merkle-path/:commitment      → { path }
+POST /events                             { name, candidates, open_at, close_at } → { election_id }   [admin-only]
+POST /register                           { election_id, commitment, proof_of_identity } → { status: "pending" }
+GET  /registrations/:election_id         → [ { commitment, status } ]                                  [admin-only]
+POST /registrations/:commitment/approve  → { status: "approved" }                                      [admin-only]
+POST /registrations/:commitment/reject   → { status: "rejected" }                                      [admin-only]
+GET  /merkle-root/:election_id           → { root }
+GET  /merkle-path/:commitment            → { path }
 ```
+
+Note what's absent: there is no endpoint that accepts or returns a voter's secret — only commitments ever cross the network.
 
 **Smart contract (Solidity)**
 ```solidity
@@ -198,6 +235,8 @@ Mainnet deployment is intentionally excluded — there is no reason for a protot
 | Automated/bot manipulation | Anomaly scoring on submission patterns | Anomaly monitor |
 | Classical proof broken by a quantum computer | Post-quantum proving track available as an alternative — explicitly scoped, not claimed for the classical track | ZK proving layer (track selection) |
 | Coercion / vote buying | **Out of scope** — named explicitly rather than silently omitted | N/A |
+| Compromised or malicious registrar/admin de-anonymizing voters | Admin only ever handles commitments (hashes), never secrets — there is no server-side record capable of linking an identity to a vote, even under full compromise | Voter client (secret generation), registrar |
+| Admin account takeover used to approve fraudulent registrations | Admin auth is separate from the voter flow; approved-but-fraudulent commitments are still bound by one-nullifier-per-election, limiting damage to one extra vote per approval, not systemic de-anonymization | Admin panel |
 
 ---
 
