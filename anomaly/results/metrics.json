@@ -1,0 +1,16 @@
+{
+  "precision": 0.428571,
+  "recall": 0.545455,
+  "f1": 0.48,
+  "roc_auc": 0.962727,
+  "confusion_matrix": {
+    "TN": 192,
+    "FP": 8,
+    "FN": 5,
+    "TP": 6
+  },
+  "test_set_size": 211,
+  "anomalous_in_test": 11,
+  "contamination_rate_used": 0.05,
+  "note": "All metrics are computed exclusively on the held-out 20% test set. The model was trained on the remaining 80% without access to any labels. The contamination parameter (0.05) matches the injection rate in generate_dataset.py and is documented in docs/anomaly_methodology.md."
+}
