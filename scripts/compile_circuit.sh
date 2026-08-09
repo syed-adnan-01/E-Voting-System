@@ -27,7 +27,8 @@ npx snarkjs zkey contribute build/vote_0000.zkey build/vote_final.zkey --name="P
 npx snarkjs zkey export verificationkey build/vote_final.zkey build/verification_key.json
 
 echo "=== 4. Exporting Solidity Verifier ==="
-mkdir -p contracts
-npx snarkjs zkey export solidityverifier build/vote_final.zkey contracts/Verifier.sol
+mkdir -p contracts/contracts
+npx snarkjs zkey export solidityverifier build/vote_final.zkey contracts/contracts/Verifier.sol
+cp contracts/contracts/Verifier.sol contracts/Verifier.sol
 
 echo "=== Circuit Compile & Setup Complete ==="

@@ -4,6 +4,9 @@
   "description": "PQ-ZKVote — Post-Quantum Zero-Knowledge E-Voting System",
   "scripts": {
     "test:circuits": "mocha test/circuits.test.js --timeout 30000",
+    "test:contracts": "npm --prefix contracts test",
+    "compile:contracts": "npm --prefix contracts run compile",
+    "deploy:contracts": "npm --prefix contracts run deploy",
     "prove": "node scripts/prove_vote.js",
     "verify": "node scripts/verify_vote.js"
   },
