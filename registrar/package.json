@@ -1,0 +1,13 @@
+{
+  "name": "pq-zkvote-registrar",
+  "version": "0.1.0",
+  "description": "Registrar service for PQ-ZKVote eligibility management and Merkle tree state",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}

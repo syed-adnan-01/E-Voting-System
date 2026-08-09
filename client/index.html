@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote Voter Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-icon">🛡️</div>
+                <div class="brand-text">
+                    <h1>PQ-ZKVote</h1>
+                    <span class="sub-badge">Anonymous Post-Quantum Voting Portal</span>
+                </div>
+            </div>
+            <div class="voter-badge" id="voterBadge">
+                <span class="badge-dot"></span>
+                <span id="badgeText">Secret Generated</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- STEP 1: Local Secret Generation & Key Backup -->
+            <section id="stepKeyGen" class="card">
+                <div class="card-header">
+                    <h2>Step 1: Local Cryptographic Secret</h2>
+                    <span class="step-tag">Local Privacy Enforcement</span>
+                </div>
+                <p class="desc">
+                    Your voting secret is generated entirely inside your browser using hardware entropy. 
+                    <strong>This secret never leaves your device and is never sent to any server or admin.</strong>
+                </p>
+
+                <div class="secret-box">
+                    <label>Your Local Voter Secret (256-Bit)</label>
+                    <div class="secret-display" id="secretDisplay">Generating secret...</div>
+                    <div class="commitment-display">
+                        <span>Commitment Hash: </span>
+                        <code id="commitmentDisplay">Calculating Poseidon hash...</code>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Security Warning:</strong> Download your backup keyfile now. If you clear browser storage or lose this secret, nobody (including election admins) can recover it or re-issue your vote.
+                </div>
+
+                <div class="action-buttons">
+                    <button id="downloadBackupBtn" class="btn btn-outline">📥 Download Secret Backup</button>
+                    <button id="proceedToRegisterBtn" class="btn btn-primary">Proceed to Registration →</button>
+                </div>
+            </section>
+
+            <!-- STEP 2: Voter Registration -->
+            <section id="stepRegister" class="card hidden">
+                <div class="card-header">
+                    <h2>Step 2: Register Voter Commitment</h2>
+                    <span class="step-tag">Zero-Knowledge Eligibility Check</span>
+                </div>
+                <p class="desc">
+                    Select an election and submit your commitment hash. The registrar will verify your eligibility without ever learning your secret.
+                </p>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="electionSelect">Select Election Event</label>
+                        <select id="electionSelect" required>
+                            <option value="">Loading elections...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voterIdentityInput">Voter Identity / Student-Employee ID</label>
+                        <input type="text" id="voterIdentityInput" placeholder="e.g. STU-2026-9874" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Submit Commitment for Approval</button>
+                </form>
+            </section>
+
+            <!-- STEP 3: Registration Status & Merkle Path -->
+            <section id="stepStatus" class="card hidden">
+                <div class="card-header">
+                    <h2>Step 3: Registration Status</h2>
+                    <span id="statusPill" class="status-pill pending">Pending Approval</span>
+                </div>
+                <p class="desc" id="statusDesc">
+                    Your registration has been submitted to the election registrar. Waiting for admin approval...
+                </p>
+
+                <div class="status-details">
+                    <div class="detail-row">
+                        <span>Commitment Hash:</span>
+                        <code id="statusCommitment">...</code>
+                    </div>
+                    <div class="detail-row">
+                        <span>Merkle Leaf Index:</span>
+                        <strong id="statusLeafIndex">Unassigned</strong>
+                    </div>
+                </div>
+
+                <button id="refreshStatusBtn" class="btn btn-outline btn-block">🔄 Refresh Approval Status</button>
+            </section>
+
+            <!-- STEP 4: Ballot & ZK Voting Station -->
+            <section id="stepVote" class="card hidden">
+                <div class="card-header">
+                    <h2>Step 4: Cast Anonymous ZK Vote</h2>
+                    <span class="step-tag">Groth16 Proof Generation</span>
+                </div>
+                <p class="desc">
+                    Your vote will be encrypted and accompanied by a zero-knowledge proof proving your Merkle inclusion and single-vote nullifier without revealing your selection.
+                </p>
+
+                <form id="voteForm">
+                    <div class="candidates-grid" id="candidatesGrid">
+                        <!-- Rendered candidates -->
+                    </div>
+
+                    <button type="submit" id="castVoteBtn" class="btn btn-success btn-block btn-lg" disabled>
+                        🔒 Generate ZK Proof & Submit Vote
+                    </button>
+                </form>
+            </section>
+
+            <!-- STEP 5: Cryptographic Receipt -->
+            <section id="stepReceipt" class="card hidden">
+                <div class="card-header">
+                    <h2>Vote Successfully Settled On-Chain! 🎉</h2>
+                    <span class="status-pill approved">Settled</span>
+                </div>
+
+                <div class="receipt-box">
+                    <div class="receipt-row">
+                        <span>Nullifier Hash:</span>
+                        <code id="receiptNullifier">0x...</code>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Election ID:</span>
+                        <strong id="receiptElectionId">1</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Transaction Hash:</span>
+                        <code id="receiptTxHash">0x...</code>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Timestamp:</span>
+                        <span id="receiptTimestamp">Just now</span>
+                    </div>
+                </div>
+
+                <p class="desc">
+                    Your vote has been permanently recorded on the blockchain ledger. Your nullifier guarantees your single-vote integrity while your identity remains completely anonymous.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

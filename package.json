@@ -5,6 +5,8 @@
   "scripts": {
     "test:circuits": "mocha test/circuits.test.js --timeout 30000",
     "test:contracts": "npm --prefix contracts test",
+    "test:phase3": "mocha test/phase3.test.js --timeout 60000",
+    "start:registrar": "npm --prefix registrar start",
     "compile:contracts": "npm --prefix contracts run compile",
     "deploy:contracts": "npm --prefix contracts run deploy",
     "prove": "node scripts/prove_vote.js",
@@ -13,7 +15,9 @@
   "dependencies": {
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
+    "cors": "^2.8.6",
     "ethers": "^6.10.0",
+    "express": "^5.2.1",
     "snarkjs": "^0.7.6"
   },
   "devDependencies": {

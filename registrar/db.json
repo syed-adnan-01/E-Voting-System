@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "id": "1",
+      "name": "Phase 3 Integration Election",
+      "candidates": [
+        "Candidate Alpha",
+        "Candidate Beta"
+      ],
+      "open_at": "2026-08-09T15:26:43.985Z",
+      "close_at": "2026-08-16T15:26:43.985Z",
+      "merkle_root": "0x2416e5299f791b3e575e48db5023a761e658bba0a391b5fa78a5b20bf6aaa8a1",
+      "status": "active",
+      "created_at": "2026-08-09T15:26:43.985Z"
+    }
+  ],
+  "registrations": [
+    {
+      "id": "1",
+      "election_id": "1",
+      "commitment": "21398108543970399943830558284824396734271869767416860222927316681586665157728",
+      "proof_of_identity": "TEST-IDENTITY-PROOF-123",
+      "status": "approved",
+      "leaf_index": 0,
+      "created_at": "2026-08-09T15:26:44.012Z"
+    }
+  ],
+  "merkle_leaves": [
+    {
+      "election_id": "1",
+      "leaf_index": 0,
+      "commitment": "21398108543970399943830558284824396734271869767416860222927316681586665157728"
+    }
+  ]
+}

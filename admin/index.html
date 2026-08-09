@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-icon">⚡</div>
+                <div class="brand-text">
+                    <h1>PQ-ZKVote</h1>
+                    <span class="sub-badge">Admin Control Portal</span>
+                </div>
+            </div>
+            <div class="auth-status" id="authStatus">
+                <span class="status-indicator active"></span>
+                <span id="authText">Authenticated</span>
+                <button id="logoutBtn" class="btn btn-outline btn-sm">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Auth Gate Modal -->
+            <section id="authSection" class="card auth-card">
+                <div class="card-header">
+                    <h2>Admin Authentication</h2>
+                    <p>Enter the administrator token to access registration management and election controls.</p>
+                </div>
+                <div class="form-group">
+                    <label for="tokenInput">Admin Security Token</label>
+                    <input type="password" id="tokenInput" placeholder="Enter admin token (default: admin-secret-token)" value="admin-secret-token">
+                </div>
+                <button id="loginBtn" class="btn btn-primary btn-block">Authenticate & Access Dashboard</button>
+            </section>
+
+            <!-- Dashboard View -->
+            <div id="dashboardSection" class="dashboard-grid hidden">
+                <!-- Left Column: Election Management -->
+                <div class="grid-column">
+                    <!-- Create Election Card -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h2>Create Election Event</h2>
+                            <p>Initialize a new zero-knowledge voting event and candidate slate.</p>
+                        </div>
+                        <form id="createEventForm">
+                            <div class="form-group">
+                                <label for="eventName">Event Name</label>
+                                <input type="text" id="eventName" placeholder="e.g. 2026 Presidential Student Council Election" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="candidatesInput">Candidates (Comma-separated)</label>
+                                <input type="text" id="candidatesInput" placeholder="Alice Smith, Bob Jones, Charlie Brown" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Initialize Election</button>
+                        </form>
+                    </section>
+
+                    <!-- Active Elections List -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h2>Elections & Merkle Tree State</h2>
+                            <button id="refreshEventsBtn" class="btn btn-icon">🔄 Refresh</button>
+                        </div>
+                        <div id="electionsList" class="elections-list">
+                            <p class="empty-state">Loading election events...</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column: Pending Voter Registrations -->
+                <div class="grid-column">
+                    <section class="card">
+                        <div class="card-header">
+                            <h2>Voter Registration Queue</h2>
+                            <div class="badge-count" id="pendingCount">0 Pending</div>
+                        </div>
+                        <p class="section-desc">Review voter identity commitments. Approving a commitment inserts it into the election Merkle tree as an eligible leaf without revealing raw secrets.</p>
+                        
+                        <div class="queue-filters">
+                            <select id="electionFilterSelect">
+                                <option value="">All Elections</option>
+                            </select>
+                        </div>
+
+                        <div id="registrationQueue" class="registration-queue">
+                            <p class="empty-state">No pending registrations found.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
