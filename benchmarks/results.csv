@@ -1,0 +1,11 @@
+track,metric,mean,stddev,unit,n_runs
+classical,proof_generation_time,897.91,98.60,ms,100
+classical,verification_time,27.16,2.74,ms,100
+classical,proof_size,723,0,bytes,1
+classical,gas_cost,296547,0,gas,1
+classical,peak_memory,529412096,0,bytes,1
+lattice,proof_generation_time,240.88,35.01,ms,100
+lattice,verification_time,10.95,1.45,ms,100
+lattice,proof_size,42199,0,bytes,1
+lattice,gas_cost,63910,0,gas,1
+lattice,peak_memory,454903,0,bytes,1

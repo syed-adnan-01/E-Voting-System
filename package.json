@@ -10,7 +10,9 @@
     "compile:contracts": "npm --prefix contracts run compile",
     "deploy:contracts": "npm --prefix contracts run deploy",
     "prove": "node scripts/prove_vote.js",
-    "verify": "node scripts/verify_vote.js"
+    "verify": "node scripts/verify_vote.js",
+    "benchmark": "python benchmarks/run_benchmarks.py",
+    "benchmark:quick": "python benchmarks/run_benchmarks.py --quick"
   },
   "dependencies": {
     "circomlib": "^2.0.5",
