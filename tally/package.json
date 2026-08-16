@@ -1,0 +1,13 @@
+{
+  "name": "pq-zkvote-tally",
+  "version": "0.1.0",
+  "description": "Tallying Service for PQ-ZKVote",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

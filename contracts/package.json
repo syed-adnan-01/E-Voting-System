@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test",
+    "test:security": "NODE_PATH=node_modules hardhat test ../security/attack_tests/test_contract_attacks.js",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js"
   },

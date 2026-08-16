@@ -46,15 +46,20 @@ describe("VotingContract (Phase 2 Smart Contract & Ledger)", function () {
         merkleRootBytes32 = "0x" + BigInt(proofData.publicSignals[1]).toString(16).padStart(64, "0");
         nullifierHashBytes32 = "0x" + BigInt(proofData.publicSignals[2]).toString(16).padStart(64, "0");
 
-        // 3. Deploy Groth16Verifier
+        // 3. Deploy Groth16Verifier & LatticeVerifier
         const VerifierFactory = await hre.ethers.getContractFactory("Groth16Verifier");
         verifier = await VerifierFactory.deploy();
         await verifier.waitForDeployment();
+
+        const LatticeVerifierFactory = await hre.ethers.getContractFactory("LatticeVerifier");
+        const latticeVerifier = await LatticeVerifierFactory.deploy();
+        await latticeVerifier.waitForDeployment();
 
         // 4. Deploy VotingContract with matching Merkle Root & Election ID
         const VotingContractFactory = await hre.ethers.getContractFactory("VotingContract");
         votingContract = await VotingContractFactory.deploy(
             await verifier.getAddress(),
+            await latticeVerifier.getAddress(),
             merkleRootBytes32,
             electionId
         );
@@ -91,7 +96,7 @@ describe("VotingContract (Phase 2 Smart Contract & Ledger)", function () {
         // Check event emission
         await expect(tx)
             .to.emit(votingContract, "VoteRecorded")
-            .withArgs(nullifierHashBytes32, hre.ethers.hexlify(encryptedVote), (val) => val > 0);
+            .withArgs(nullifierHashBytes32, hre.ethers.hexlify(encryptedVote), (val) => val > 0, 0);
     });
 
     it("3. NEGATIVE: Should revert on duplicate vote (reused nullifier)", async function () {
@@ -146,7 +151,7 @@ describe("VotingContract (Phase 2 Smart Contract & Ledger)", function () {
                 newNullifierHash,
                 hre.ethers.toUtf8Bytes("encrypted")
             )
-        ).to.be.revertedWith("invalid proof");
+        ).to.be.revertedWith("invalid Groth16 proof");
     });
 
     it("5. NEGATIVE: Should revert when election is closed", async function () {

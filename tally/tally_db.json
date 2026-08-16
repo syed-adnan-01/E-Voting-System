@@ -1,0 +1,66 @@
+{
+  "tallies": {
+    "1": {
+      "total_votes": 2,
+      "candidate_totals": {
+        "0": 2
+      },
+      "proof_types": {
+        "groth16": 1,
+        "lattice": 1
+      }
+    },
+    "sec_test_election_99": {
+      "total_votes": 1,
+      "candidate_totals": {
+        "0": 1
+      },
+      "proof_types": {
+        "groth16": 1,
+        "lattice": 0
+      }
+    },
+    "sec_test_election_1786861902029": {
+      "total_votes": 1,
+      "candidate_totals": {
+        "0": 1
+      },
+      "proof_types": {
+        "groth16": 1,
+        "lattice": 0
+      }
+    }
+  },
+  "auditLogs": {
+    "1": [
+      {
+        "nullifier_hash": "0x5a0aed32d35ad799c47c2c9dd5187ddc65af50d1f601f9865bb11c0191084bd0",
+        "proof_type": "groth16",
+        "tx_hash": "0xd208a42097003f7a8994bfb40fa2c9f30d32b2f4d52b2a1516b271ad43dedf81",
+        "timestamp": 1786857607952
+      },
+      {
+        "nullifier_hash": "0x646dbb55925705f71f412faeca71483a28b602e0227bf5a693c6991e93ec5163",
+        "proof_type": "lattice",
+        "tx_hash": "0xc474b478279bc5cefb8b2e2c491713951224dee22904e19a5d5362b60aff4a5c",
+        "timestamp": 1786857602723
+      }
+    ],
+    "sec_test_election_99": [
+      {
+        "nullifier_hash": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "proof_type": "groth16",
+        "tx_hash": "0x000000000000000000000000000000000000000000000000000dacd1ff73794c",
+        "timestamp": 1786861833952
+      }
+    ],
+    "sec_test_election_1786861902029": [
+      {
+        "nullifier_hash": "0x000000000000000000000000000000000000000000000000000631f32c3199aa",
+        "proof_type": "groth16",
+        "tx_hash": "0x0000000000000000000000000000000000000000000000000006d19289ee25a9",
+        "timestamp": 1786861902308
+      }
+    ]
+  }
+}

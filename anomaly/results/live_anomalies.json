@@ -1,0 +1,30 @@
+[
+  {
+    "election_id": "1",
+    "nullifier_hash": "0x5a0aed32d35ad799c47c2c9dd5187ddc65af50d1f601f9865bb11c0191084bd0",
+    "tx_hash": "0xd208a42097003f7a8994bfb40fa2c9f30d32b2f4d52b2a1516b271ad43dedf81",
+    "timestamp": 1786857607.0,
+    "verification_latency_ms": 3200.0,
+    "gas_price_gwei": 480.0,
+    "submission_interval_s": 0.15,
+    "anomaly_score": -0.181,
+    "risk_score": 99,
+    "severity": "CRITICAL",
+    "flag_reason": "Rapid-fire burst submission (0.15s interval) | Abnormal gas price spike (480.0 Gwei) | High proof verification latency (3200ms)",
+    "status": "flagged_for_review"
+  },
+  {
+    "election_id": "702",
+    "nullifier_hash": "0xnullifier_attack_1",
+    "tx_hash": "0xtx_attack_1",
+    "timestamp": 1700000005.0,
+    "verification_latency_ms": 4500.0,
+    "gas_price_gwei": 650.0,
+    "submission_interval_s": 0.1,
+    "anomaly_score": -0.15,
+    "risk_score": 99,
+    "severity": "CRITICAL",
+    "flag_reason": "Rapid-fire burst submission (0.10s interval) | Abnormal gas price spike (650.0 Gwei) | High proof verification latency (4500ms)",
+    "status": "flagged_for_review"
+  }
+]

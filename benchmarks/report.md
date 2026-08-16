@@ -1,6 +1,6 @@
 # PQ-ZKVote Benchmark Report — Classical vs. Post-Quantum
 
-> **Auto-generated** by `benchmarks/run_benchmarks.py` on 2026-08-12 18:09:42 IST.
+> **Auto-generated** by `benchmarks/run_benchmarks.py` on 2026-08-15 12:23:29 IST.
 > Every number in this report was produced by the benchmark script — no manually entered values.
 
 ---
@@ -21,13 +21,13 @@
 
 | Metric | Classical (Groth16) | Lattice (QRZ-KPA) | Ratio (Lattice / Classical) |
 |---|---|---|---|
-| Proof generation time | 897.9 ± 98.6 ms | 240.9 ± 35.0 ms | 0.3× |
-| Verification time | 27.2 ± 2.7 ms | 10.9 ± 1.5 ms | 0.4× |
-| Proof size | 723 bytes | 42,199 bytes | 58.4× |
+| Proof generation time | 936.8 ± 22.9 ms | 249.7 ± 8.0 ms | 0.3× |
+| Verification time | 31.1 ± 3.8 ms | 12.7 ± 0.6 ms | 0.4× |
+| Proof size | 722 bytes | 42,149 bytes | 58.4× |
 | On-chain gas cost | 296,547 gas | 63,910 gas | 4.64× (classical / lattice) |
-| Peak memory (proving) | 504.9 MB | 0.4 MB | — |
+| Peak memory (proving) | 497.5 MB | 0.4 MB | — |
 
-N = 100 runs for timing metrics.
+N = 5 runs for timing metrics.
 
 ---
 
@@ -35,23 +35,23 @@ N = 100 runs for timing metrics.
 
 ### Proof Generation Time
 
-The classical Groth16 track generates proofs in **897.9 ms** (mean), while the
-lattice-based QRZ-KPA track requires **240.9 ms** — approximately
+The classical Groth16 track generates proofs in **936.8 ms** (mean), while the
+lattice-based QRZ-KPA track requires **249.7 ms** — approximately
 **0.3× faster**.
 
 The lattice prover is faster, likely due to simpler arithmetic operations compared to elliptic-curve pairings.
 
 ### Verification Time
 
-Classical verification takes **27.2 ms** vs. lattice verification at
-**10.9 ms** (0.4×).
+Classical verification takes **31.1 ms** vs. lattice verification at
+**12.7 ms** (0.4×).
 
 The lattice verifier performs polynomial multiplications and modular arithmetic, which are computationally lighter than elliptic-curve pairing checks but involve larger data structures.
 
 ### Proof Size
 
-Groth16 proofs are **723 bytes** — one of the scheme's key advantages. Lattice proofs
-are **42,199 bytes** (58.4× larger). This is the well-known size tradeoff for
+Groth16 proofs are **722 bytes** — one of the scheme's key advantages. Lattice proofs
+are **42,149 bytes** (58.4× larger). This is the well-known size tradeoff for
 post-quantum constructions: lattice-based proofs carry polynomial vectors that are inherently larger
 than the three elliptic-curve group elements in a Groth16 proof.
 
@@ -69,7 +69,7 @@ verification is cheaper than pairing-based verification.
 
 ### Peak Memory
 
-Classical track: **504.9 MB** (Node.js process RSS).
+Classical track: **497.5 MB** (Node.js process RSS).
 Lattice track: **0.4 MB** (Python tracemalloc peak).
 
 **Methodology note**: These numbers use different measurement approaches (process RSS vs.

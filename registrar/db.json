@@ -7,11 +7,11 @@
         "Candidate Alpha",
         "Candidate Beta"
       ],
-      "open_at": "2026-08-09T15:26:43.985Z",
-      "close_at": "2026-08-16T15:26:43.985Z",
+      "open_at": "2026-08-16T05:09:15.181Z",
+      "close_at": "2026-08-23T05:09:15.181Z",
       "merkle_root": "0x2416e5299f791b3e575e48db5023a761e658bba0a391b5fa78a5b20bf6aaa8a1",
       "status": "active",
-      "created_at": "2026-08-09T15:26:43.985Z"
+      "created_at": "2026-08-16T05:09:15.181Z"
     }
   ],
   "registrations": [
@@ -22,7 +22,18 @@
       "proof_of_identity": "TEST-IDENTITY-PROOF-123",
       "status": "approved",
       "leaf_index": 0,
-      "created_at": "2026-08-09T15:26:44.012Z"
+      "created_at": "2026-08-16T05:09:15.209Z"
+    },
+    {
+      "id": "2",
+      "election_id": "1",
+      "commitment": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "proof_of_identity": {
+        "passport": "ID-999"
+      },
+      "status": "pending",
+      "leaf_index": null,
+      "created_at": "2026-08-16T06:30:33.902Z"
     }
   ],
   "merkle_leaves": [

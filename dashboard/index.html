@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote — Live Election & Anomaly Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-badge">PQ</div>
+                <div>
+                    <h1>PQ-ZKVote</h1>
+                    <p class="subtitle">Live Election Tallying & Anomaly Monitor</p>
+                </div>
+            </div>
+
+            <div class="nav-controls">
+                <div class="control-group">
+                    <label for="electionSelect">Active Election:</label>
+                    <select id="electionSelect" class="styled-select">
+                        <option value="1">Loading elections...</option>
+                    </select>
+                </div>
+
+                <div class="service-statuses">
+                    <span class="status-indicator" id="statusRegistrar"><span class="dot"></span> Registrar</span>
+                    <span class="status-indicator" id="statusTally"><span class="dot"></span> Tally Service</span>
+                    <span class="status-indicator" id="statusAnomaly"><span class="dot"></span> Anomaly AI</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-grid">
+
+            <!-- Summary KPI Metric Cards -->
+            <section class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Votes Recorded</span>
+                        <div class="kpi-icon">🗳️</div>
+                    </div>
+                    <div class="kpi-value" id="kpiTotalVotes">0</div>
+                    <div class="kpi-foot" id="kpiElectionStatus">Election Active</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Groth16 Classical</span>
+                        <div class="kpi-icon">⚡</div>
+                    </div>
+                    <div class="kpi-value text-blue" id="kpiGroth16Votes">0</div>
+                    <div class="kpi-foot">SNARK Verification Track</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">QRZ-KPA Lattice PQC</span>
+                        <div class="kpi-icon">🛡️</div>
+                    </div>
+                    <div class="kpi-value text-purple" id="kpiLatticeVotes">0</div>
+                    <div class="kpi-foot">Quantum-Resistant Track</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Flagged Anomalies</span>
+                        <div class="kpi-icon">⚠️</div>
+                    </div>
+                    <div class="kpi-value text-danger" id="kpiAnomalyCount">0</div>
+                    <div class="kpi-foot" id="kpiAnomalyStatus">AI IsolationForest Active</div>
+                </div>
+            </section>
+
+            <!-- Middle Section: Tallying & Anomaly Alerts -->
+            <div class="two-col-grid">
+
+                <!-- Candidate Vote Tally -->
+                <section class="glass-card tally-section">
+                    <div class="card-header">
+                        <div>
+                            <h2>Live Candidate Tally</h2>
+                            <p class="card-subtitle">Real-time aggregated results from verified ZK proofs</p>
+                        </div>
+                        <button id="btnRefresh" class="btn btn-secondary btn-sm">↻ Refresh</button>
+                    </div>
+
+                    <div id="tallyContainer" class="tally-container">
+                        <div class="empty-state">Select or run an election to view candidate vote breakdown.</div>
+                    </div>
+
+                    <div class="proof-distribution-bar">
+                        <div class="dist-label">Proving Track Distribution:</div>
+                        <div class="stacked-bar">
+                            <div id="barGroth16" class="segment groth16-segment" style="width: 50%;">Groth16 (50%)</div>
+                            <div id="barLattice" class="segment lattice-segment" style="width: 50%;">QRZ-KPA Lattice (50%)</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Anomaly Alert Feed -->
+                <section class="glass-card anomaly-section">
+                    <div class="card-header">
+                        <div>
+                            <h2>AI Anomaly Detection Feed</h2>
+                            <p class="card-subtitle">IsolationForest ML model streaming telemetry analysis</p>
+                        </div>
+                        <span class="live-pill">LIVE MONITOR</span>
+                    </div>
+
+                    <div id="anomalyFeed" class="anomaly-feed">
+                        <div class="empty-state green-state">
+                            <div class="empty-icon">✓</div>
+                            <p>No anomalous activity detected. All submission parameters nominal.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Bottom Section: Public Zero-PII Audit Log -->
+            <section class="glass-card audit-section">
+                <div class="card-header">
+                    <div>
+                        <h2>Public Zero-PII Audit Ledger</h2>
+                        <p class="card-subtitle">Verifiable proof logs published to ledger — Voter identity strictly anonymous</p>
+                    </div>
+                    <div class="demo-actions">
+                        <button id="btnSimulateVote" class="btn btn-outline btn-sm">+ Cast Test Vote</button>
+                        <button id="btnSimulateAttack" class="btn btn-danger-outline btn-sm">⚡ Simulate Anomaly</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Nullifier Hash</th>
+                                <th>Proving System</th>
+                                <th>Transaction Hash</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-table">No votes recorded on ledger yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
