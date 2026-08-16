@@ -2,342 +2,57 @@
   "events": [
     {
       "id": "1",
-      "name": "Automated E2E National Primary Election 2026",
+      "name": "Phase 3 Integration Election",
       "candidates": [
-        "Alice",
-        "Bob",
-        "Charlie",
-        "Diana"
+        "Candidate Alpha",
+        "Candidate Beta"
       ],
-      "open_at": 1786863637715,
-      "close_at": 1786867238715,
-      "merkle_root": "0x09b8bea4b6af6da41bedd36a91c5384255a6a28d574436580e121c9c4c2ba6dd",
-      "status": "closed",
-      "created_at": "2026-08-16T07:00:38.821Z"
+      "open_at": "2026-08-16T05:09:15.181Z",
+      "close_at": "2026-08-23T05:09:15.181Z",
+      "merkle_root": "0x2416e5299f791b3e575e48db5023a761e658bba0a391b5fa78a5b20bf6aaa8a1",
+      "status": "active",
+      "created_at": "2026-08-16T05:09:15.181Z"
+    },
+    {
+      "id": "2",
+      "name": "President Election",
+      "candidates": [
+        "Ace",
+        "Zoro",
+        "Luffy"
+      ],
+      "open_at": 1786865329918,
+      "close_at": 1786868930918,
+      "merkle_root": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "active",
+      "created_at": "2026-08-16T07:28:50.929Z"
     }
   ],
   "registrations": [
     {
       "id": "1",
       "election_id": "1",
-      "commitment": "0x2bed55eb91ca92b779e034a141916e4f8a75756cd0ca8102595f68818992bda9",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1000"
-      },
+      "commitment": "21398108543970399943830558284824396734271869767416860222927316681586665157728",
+      "proof_of_identity": "TEST-IDENTITY-PROOF-123",
       "status": "approved",
       "leaf_index": 0,
-      "created_at": "2026-08-16T07:00:40.160Z"
+      "created_at": "2026-08-16T05:09:15.209Z"
     },
     {
       "id": "2",
       "election_id": "1",
-      "commitment": "0x19de0041536003d61fce0ed33e1336b7a12913e81d90b23322b1056d7d26abcb",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1001"
-      },
-      "status": "approved",
-      "leaf_index": 1,
-      "created_at": "2026-08-16T07:00:40.168Z"
-    },
-    {
-      "id": "3",
-      "election_id": "1",
-      "commitment": "0x275471b114f008fa9ad6ed725c52a8c757656be3028e73ddb395165d44a549b2",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1002"
-      },
-      "status": "approved",
-      "leaf_index": 2,
-      "created_at": "2026-08-16T07:00:40.176Z"
-    },
-    {
-      "id": "4",
-      "election_id": "1",
-      "commitment": "0x1fbcdaebc07ebf92f76c86ddd7254ce8f48a14295e35e75d0009a5cb30193fa4",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1003"
-      },
-      "status": "approved",
-      "leaf_index": 3,
-      "created_at": "2026-08-16T07:00:40.183Z"
-    },
-    {
-      "id": "5",
-      "election_id": "1",
-      "commitment": "0x0c7b64c8592e83b78084c17032e55674cbe5619054f0c56d58b7fbd695b68d4d",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1004"
-      },
-      "status": "approved",
-      "leaf_index": 4,
-      "created_at": "2026-08-16T07:00:40.190Z"
-    },
-    {
-      "id": "6",
-      "election_id": "1",
-      "commitment": "0x0f4e2a733a09d855a19f529ac726f5d66ae2261efbb3dfd128af93ed59d3b5e0",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1005"
-      },
-      "status": "approved",
-      "leaf_index": 5,
-      "created_at": "2026-08-16T07:00:40.196Z"
-    },
-    {
-      "id": "7",
-      "election_id": "1",
-      "commitment": "0x258b7176e3b86379e0639f4151c030af82b595b9ca2faf646d1c35f39324010b",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1006"
-      },
-      "status": "approved",
-      "leaf_index": 6,
-      "created_at": "2026-08-16T07:00:40.201Z"
-    },
-    {
-      "id": "8",
-      "election_id": "1",
-      "commitment": "0x14eeca8c76ed9b18dff959934b6d4a9e4ed9d0b63f3b91ce765c25a6cb9dded6",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1007"
-      },
-      "status": "approved",
-      "leaf_index": 7,
-      "created_at": "2026-08-16T07:00:40.211Z"
-    },
-    {
-      "id": "9",
-      "election_id": "1",
-      "commitment": "0x14a9d079169e82fb2cca732ac493d2be81859432fed8f7dc639cf0e0f0adbbd3",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1008"
-      },
-      "status": "approved",
-      "leaf_index": 8,
-      "created_at": "2026-08-16T07:00:40.220Z"
-    },
-    {
-      "id": "10",
-      "election_id": "1",
-      "commitment": "0x0f8966613e1b2b08a71e911cd871adefe2e435d3c0ebe0fa0984c05411abe46c",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1009"
-      },
-      "status": "approved",
-      "leaf_index": 9,
-      "created_at": "2026-08-16T07:00:40.232Z"
-    },
-    {
-      "id": "11",
-      "election_id": "1",
-      "commitment": "0x008bbd4225263e5c853fc297e818ba4de5c9e01951d24494edcc1626daadfb3d",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1010"
-      },
-      "status": "approved",
-      "leaf_index": 10,
-      "created_at": "2026-08-16T07:00:40.246Z"
-    },
-    {
-      "id": "12",
-      "election_id": "1",
-      "commitment": "0x098e7e4f48dadd8937900d08cf1c30084bcd6e60f887f5861de5424837d2139d",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1011"
-      },
-      "status": "approved",
-      "leaf_index": 11,
-      "created_at": "2026-08-16T07:00:40.258Z"
-    },
-    {
-      "id": "13",
-      "election_id": "1",
-      "commitment": "0x13044d013e8d7d982625246fc8925fbf15fe0640fc010943439d6cf22609063b",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1012"
-      },
-      "status": "approved",
-      "leaf_index": 12,
-      "created_at": "2026-08-16T07:00:40.273Z"
-    },
-    {
-      "id": "14",
-      "election_id": "1",
-      "commitment": "0x15d2a4159e14d34c1ccea27d8907192b8128f3599cb0a664b52f4aa160931dce",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1013"
-      },
-      "status": "approved",
-      "leaf_index": 13,
-      "created_at": "2026-08-16T07:00:40.285Z"
-    },
-    {
-      "id": "15",
-      "election_id": "1",
-      "commitment": "0x18088e76c26cd8d8a664fb7c757b88301e6154300859a10996d4df1a9fc13142",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1014"
-      },
-      "status": "approved",
-      "leaf_index": 14,
-      "created_at": "2026-08-16T07:00:40.294Z"
-    },
-    {
-      "id": "16",
-      "election_id": "1",
-      "commitment": "0x209f1b8f03d6ee18096fc01519334fdaa17c28e3e0ae119f2c4ebb6f2bb50a5d",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1015"
-      },
-      "status": "approved",
-      "leaf_index": 15,
-      "created_at": "2026-08-16T07:00:40.308Z"
-    },
-    {
-      "id": "17",
-      "election_id": "1",
-      "commitment": "0x278b46636c52e9fbf69942291bb5c675fe5256b540546a0a13a6cf3109c50e00",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1016"
-      },
-      "status": "approved",
-      "leaf_index": 16,
-      "created_at": "2026-08-16T07:00:40.315Z"
-    },
-    {
-      "id": "18",
-      "election_id": "1",
-      "commitment": "0x0fb8213d73f8a3b0e6e4eab68372849bde631820684606ca6237c21440f87a54",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1017"
-      },
-      "status": "approved",
-      "leaf_index": 17,
-      "created_at": "2026-08-16T07:00:40.320Z"
-    },
-    {
-      "id": "19",
-      "election_id": "1",
-      "commitment": "0x0d9a20160875d515c2db97af9d3350035c4c0761e68950eba0750570e2501d8f",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1018"
-      },
-      "status": "approved",
-      "leaf_index": 18,
-      "created_at": "2026-08-16T07:00:40.325Z"
-    },
-    {
-      "id": "20",
-      "election_id": "1",
-      "commitment": "0x13a92186820f951df2ccc1a965abf1ce4b3a1d55f65c1c52b57af5e373ecec8c",
-      "proof_of_identity": {
-        "voter_id": "VOTER-ID-1019"
-      },
-      "status": "approved",
-      "leaf_index": 19,
-      "created_at": "2026-08-16T07:00:40.334Z"
+      "commitment": "0x2b37c11ab87dbddc85ace42fb748c849ede418b52e5365899954f6d186c76903",
+      "proof_of_identity": "EMP001",
+      "status": "pending",
+      "leaf_index": null,
+      "created_at": "2026-08-16T07:28:03.860Z"
     }
   ],
   "merkle_leaves": [
     {
       "election_id": "1",
       "leaf_index": 0,
-      "commitment": "0x2bed55eb91ca92b779e034a141916e4f8a75756cd0ca8102595f68818992bda9"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 1,
-      "commitment": "0x19de0041536003d61fce0ed33e1336b7a12913e81d90b23322b1056d7d26abcb"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 2,
-      "commitment": "0x275471b114f008fa9ad6ed725c52a8c757656be3028e73ddb395165d44a549b2"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 3,
-      "commitment": "0x1fbcdaebc07ebf92f76c86ddd7254ce8f48a14295e35e75d0009a5cb30193fa4"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 4,
-      "commitment": "0x0c7b64c8592e83b78084c17032e55674cbe5619054f0c56d58b7fbd695b68d4d"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 5,
-      "commitment": "0x0f4e2a733a09d855a19f529ac726f5d66ae2261efbb3dfd128af93ed59d3b5e0"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 6,
-      "commitment": "0x258b7176e3b86379e0639f4151c030af82b595b9ca2faf646d1c35f39324010b"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 7,
-      "commitment": "0x14eeca8c76ed9b18dff959934b6d4a9e4ed9d0b63f3b91ce765c25a6cb9dded6"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 8,
-      "commitment": "0x14a9d079169e82fb2cca732ac493d2be81859432fed8f7dc639cf0e0f0adbbd3"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 9,
-      "commitment": "0x0f8966613e1b2b08a71e911cd871adefe2e435d3c0ebe0fa0984c05411abe46c"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 10,
-      "commitment": "0x008bbd4225263e5c853fc297e818ba4de5c9e01951d24494edcc1626daadfb3d"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 11,
-      "commitment": "0x098e7e4f48dadd8937900d08cf1c30084bcd6e60f887f5861de5424837d2139d"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 12,
-      "commitment": "0x13044d013e8d7d982625246fc8925fbf15fe0640fc010943439d6cf22609063b"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 13,
-      "commitment": "0x15d2a4159e14d34c1ccea27d8907192b8128f3599cb0a664b52f4aa160931dce"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 14,
-      "commitment": "0x18088e76c26cd8d8a664fb7c757b88301e6154300859a10996d4df1a9fc13142"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 15,
-      "commitment": "0x209f1b8f03d6ee18096fc01519334fdaa17c28e3e0ae119f2c4ebb6f2bb50a5d"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 16,
-      "commitment": "0x278b46636c52e9fbf69942291bb5c675fe5256b540546a0a13a6cf3109c50e00"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 17,
-      "commitment": "0x0fb8213d73f8a3b0e6e4eab68372849bde631820684606ca6237c21440f87a54"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 18,
-      "commitment": "0x0d9a20160875d515c2db97af9d3350035c4c0761e68950eba0750570e2501d8f"
-    },
-    {
-      "election_id": "1",
-      "leaf_index": 19,
-      "commitment": "0x13a92186820f951df2ccc1a965abf1ce4b3a1d55f65c1c52b57af5e373ecec8c"
+      "commitment": "21398108543970399943830558284824396734271869767416860222927316681586665157728"
     }
   ]
 }

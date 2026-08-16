@@ -34,3 +34,7 @@ contracts/typechain-types/
 bin/circom
 
 The_Intelligent_Quantum-Resistant_Zero-Knowledge_Proof_Algorithm_QRZ-KPA_for_E-Voting_Blockchain-Based_Systems.pdf
+architecture.md
+PQ_ZKVote_Implementation_Plan.md
+PQ_ZKVote_PRD.md
+PQ_ZKVote_Project_Overview.md

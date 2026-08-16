@@ -3,159 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PQ-ZKVote — Live Election & Anomaly Monitor</title>
+    <title>PQ-ZKVote — Post-Quantum Zero-Knowledge E-Voting Platform</title>
+    <meta name="description" content="Anonymous, Post-Quantum Zero-Knowledge E-Voting System powered by Groth16, QRZ-KPA Lattice cryptography, and real-time AI anomaly detection.">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="background-glow"></div>
-
-    <div class="app-container">
-        <!-- Header -->
+    <div class="app-wrapper">
+        <!-- TOP NAVBAR -->
         <header class="navbar">
             <div class="brand">
-                <div class="logo-badge">PQ</div>
-                <div>
-                    <h1>PQ-ZKVote</h1>
-                    <p class="subtitle">Live Election Tallying & Anomaly Monitor</p>
+                <div class="logo-shield">🛡️</div>
+                <div class="brand-info">
+                    <h1>PQ-ZKVote <span class="version-tag">v1.0-PQC</span></h1>
+                    <p>Post-Quantum Zero-Knowledge E-Voting Platform</p>
                 </div>
             </div>
 
-            <div class="nav-controls">
-                <div class="control-group">
-                    <label for="electionSelect">Active Election:</label>
-                    <select id="electionSelect" class="styled-select">
-                        <option value="1">Loading elections...</option>
-                    </select>
+            <!-- SERVICE HEALTH STATUS PILLS -->
+            <div class="service-health-bar">
+                <div class="health-item" id="healthRegistrar">
+                    <span class="dot"></span>
+                    <span class="label">Registrar :4000</span>
                 </div>
-
-                <div class="service-statuses">
-                    <span class="status-indicator" id="statusRegistrar"><span class="dot"></span> Registrar</span>
-                    <span class="status-indicator" id="statusTally"><span class="dot"></span> Tally Service</span>
-                    <span class="status-indicator" id="statusAnomaly"><span class="dot"></span> Anomaly AI</span>
+                <div class="health-item" id="healthTally">
+                    <span class="dot"></span>
+                    <span class="label">Tally :4002</span>
+                </div>
+                <div class="health-item" id="healthAnomaly">
+                    <span class="dot"></span>
+                    <span class="label">Anomaly AI :8000</span>
                 </div>
             </div>
+
+            <button id="btnQuickDemo" class="btn btn-gradient">⚡ Run 100-Voter Election</button>
         </header>
 
-        <!-- Main Content -->
-        <main class="dashboard-grid">
+        <!-- NAVIGATION TABS -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="tabVoter">🗳️ Voter Station</button>
+            <button class="tab-btn" data-tab="tabAdmin">👑 Admin Console</button>
+            <button class="tab-btn" data-tab="tabAnalytics">📊 Analytics & Anomalies</button>
+            <button class="tab-btn" data-tab="tabVerifier">🛡️ Independent Verifier</button>
+            <button class="tab-btn" data-tab="tabKeyVault">🔑 Key Vault & Governance</button>
+        </nav>
 
-            <!-- Summary KPI Metric Cards -->
-            <section class="kpi-row">
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Total Votes Recorded</span>
-                        <div class="kpi-icon">🗳️</div>
+        <!-- MAIN CONTAINER -->
+        <main class="main-container">
+            <!-- =============================================================== -->
+            <!-- TAB 1: VOTER STATION -->
+            <!-- =============================================================== -->
+            <section id="tabVoter" class="tab-content active">
+                <div class="wizard-header">
+                    <h2>Anonymous Voter Portal</h2>
+                    <p>Cast your vote with cryptographic proof of eligibility and single-vote nullifier without exposing your identity.</p>
+
+                    <!-- STEP INDICATOR BAR -->
+                    <div class="wizard-steps">
+                        <div class="step-pill active" id="stepPill1">1. Secret Gen</div>
+                        <div class="step-pill" id="stepPill2">2. Register</div>
+                        <div class="step-pill" id="stepPill3">3. Status</div>
+                        <div class="step-pill" id="stepPill4">4. Cast Vote</div>
+                        <div class="step-pill" id="stepPill5">5. Receipt</div>
                     </div>
-                    <div class="kpi-value" id="kpiTotalVotes">0</div>
-                    <div class="kpi-foot" id="kpiElectionStatus">Election Active</div>
                 </div>
 
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Groth16 Classical</span>
-                        <div class="kpi-icon">⚡</div>
+                <!-- STEP 1: Secret Generation -->
+                <div id="voterStep1" class="card card-glass">
+                    <div class="card-title">
+                        <h3>Step 1: Client-Side Cryptographic Secret</h3>
+                        <span class="badge badge-cyan">Hardware Entropy</span>
                     </div>
-                    <div class="kpi-value text-blue" id="kpiGroth16Votes">0</div>
-                    <div class="kpi-foot">SNARK Verification Track</div>
+                    <p class="card-desc">Your secret is generated strictly in your browser RAM. It is never transmitted to any server or admin.</p>
+                    
+                    <div class="code-box">
+                        <label>Voter Private Secret (256-Bit Scalar):</label>
+                        <div class="secret-row">
+                            <code id="secretDisplay">Generating secret...</code>
+                            <button id="btnToggleSecret" class="btn btn-sm btn-outline">👁️ Reveal</button>
+                        </div>
+                        <label style="margin-top: 12px;">Poseidon Commitment Hash $H(S)$:</label>
+                        <code id="commitmentDisplay">Calculating Poseidon hash...</code>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        ⚠️ <strong>Security Notice:</strong> Download your secret backup keyfile. Lost secrets cannot be recovered or re-issued.
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="btnDownloadBackup" class="btn btn-outline">📥 Download Secret Backup</button>
+                        <button id="btnProceedToStep2" class="btn btn-primary">Proceed to Registration →</button>
+                    </div>
                 </div>
 
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">QRZ-KPA Lattice PQC</span>
-                        <div class="kpi-icon">🛡️</div>
+                <!-- STEP 2: Registration -->
+                <div id="voterStep2" class="card card-glass hidden">
+                    <div class="card-title">
+                        <h3>Step 2: Register Voter Commitment</h3>
+                        <span class="badge badge-purple">Eligibility Verification</span>
                     </div>
-                    <div class="kpi-value text-purple" id="kpiLatticeVotes">0</div>
-                    <div class="kpi-foot">Quantum-Resistant Track</div>
+                    <p class="card-desc">Select an active election and submit your Poseidon commitment hash to the registrar.</p>
+
+                    <form id="formRegisterVoter">
+                        <div class="form-group">
+                            <label for="voterElectionSelect">Select Election Event</label>
+                            <select id="voterElectionSelect" class="form-control" required>
+                                <option value="">Loading elections...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="voterIdentityInput">Voter Identity / Student-Employee ID</label>
+                            <input type="text" id="voterIdentityInput" class="form-control" placeholder="e.g. STU-2026-9874" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Submit Commitment for Approval</button>
+                    </form>
                 </div>
 
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Flagged Anomalies</span>
-                        <div class="kpi-icon">⚠️</div>
+                <!-- STEP 3: Approval Status -->
+                <div id="voterStep3" class="card card-glass hidden">
+                    <div class="card-title">
+                        <h3>Step 3: Registration Approval Status</h3>
+                        <span id="voterStatusPill" class="badge badge-warning">PENDING</span>
                     </div>
-                    <div class="kpi-value text-danger" id="kpiAnomalyCount">0</div>
-                    <div class="kpi-foot" id="kpiAnomalyStatus">AI IsolationForest Active</div>
+                    <p class="card-desc" id="voterStatusDesc">Your registration has been submitted. Waiting for election admin approval...</p>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Commitment Hash:</span>
+                            <code id="voterStatusCommitment">...</code>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Merkle Leaf Index:</span>
+                            <strong id="voterStatusLeaf">Unassigned</strong>
+                        </div>
+                    </div>
+
+                    <button id="btnRefreshVoterStatus" class="btn btn-outline btn-block">🔄 Refresh Approval Status</button>
+                </div>
+
+                <!-- STEP 4: Cast ZK Vote -->
+                <div id="voterStep4" class="card card-glass hidden">
+                    <div class="card-title">
+                        <h3>Step 4: Cast Anonymous Zero-Knowledge Vote</h3>
+                        <span class="badge badge-emerald">Dual-Track Proof Generation</span>
+                    </div>
+                    <p class="card-desc">Select your candidate choice and cryptographic proof scheme to encrypt and submit your vote.</p>
+
+                    <form id="formCastVote">
+                        <label class="form-label">Select Candidate Choice:</label>
+                        <div class="candidates-grid" id="voterCandidatesGrid">
+                            <!-- Rendered Candidate Cards -->
+                        </div>
+
+                        <label class="form-label" style="margin-top: 20px;">Select Zero-Knowledge Proof Scheme:</label>
+                        <div class="scheme-grid">
+                            <label class="scheme-card selected" id="schemeGroth16">
+                                <input type="radio" name="proofScheme" value="0" checked hidden>
+                                <div class="scheme-title">Track 1: Classical Groth16</div>
+                                <div class="scheme-desc">snarkjs / circom Pairing Verification (Succinct & Fast)</div>
+                            </label>
+                            <label class="scheme-card" id="schemeLattice">
+                                <input type="radio" name="proofScheme" value="1" hidden>
+                                <div class="scheme-title">Track 2: Post-Quantum QRZ-KPA</div>
+                                <div class="scheme-desc">Lattice Ring Equation $\|z\|_\infty \le 6144$ (Quantum-Resistant)</div>
+                            </label>
+                        </div>
+
+                        <button type="submit" id="btnSubmitVote" class="btn btn-success btn-block btn-lg" disabled>
+                            🔒 Encrypt Payload & Submit ZK Vote
+                        </button>
+                    </form>
+                </div>
+
+                <!-- STEP 5: Receipt -->
+                <div id="voterStep5" class="card card-glass hidden">
+                    <div class="card-title">
+                        <h3>Vote Successfully Settled On-Chain! 🎉</h3>
+                        <span class="badge badge-emerald">Settled</span>
+                    </div>
+
+                    <div class="receipt-card">
+                        <div class="receipt-row">
+                            <span>Nullifier Hash $H(S, \text{id})$:</span>
+                            <code id="receiptNullifier">0x...</code>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Election ID:</span>
+                            <strong id="receiptElectionId">#1</strong>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Transaction Hash:</span>
+                            <code id="receiptTxHash">0x...</code>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Proof Scheme:</span>
+                            <span id="receiptProofType" class="badge badge-purple">Groth16</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Timestamp:</span>
+                            <span id="receiptTimestamp">Just now</span>
+                        </div>
+                    </div>
+
+                    <p class="card-desc" style="margin-top: 16px;">
+                        Your nullifier guarantees single-vote integrity while your identity and vote choice remain completely secret.
+                    </p>
+
+                    <button id="btnVerifyReceipt" class="btn btn-primary btn-block">🛡️ Audit Vote on Independent Verifier →</button>
                 </div>
             </section>
 
-            <!-- Middle Section: Tallying & Anomaly Alerts -->
-            <div class="two-col-grid">
+            <!-- =============================================================== -->
+            <!-- TAB 2: ADMIN CONSOLE -->
+            <!-- =============================================================== -->
+            <section id="tabAdmin" class="tab-content">
+                <div class="section-header">
+                    <h2>Election Administrator Console</h2>
+                    <p>Manage election events, approve voter registrations, sync smart contract Merkle roots, and trigger automated test elections.</p>
+                </div>
 
-                <!-- Candidate Vote Tally -->
-                <section class="glass-card tally-section">
-                    <div class="card-header">
-                        <div>
-                            <h2>Live Candidate Tally</h2>
-                            <p class="card-subtitle">Real-time aggregated results from verified ZK proofs</p>
+                <div class="admin-grid">
+                    <!-- Create Election Card -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>Create New Election Event</h3>
+                            <span class="badge badge-cyan">Event Setup</span>
                         </div>
-                        <button id="btnRefresh" class="btn btn-secondary btn-sm">↻ Refresh</button>
+                        <form id="formCreateEvent">
+                            <div class="form-group">
+                                <label for="adminEventName">Election Name</label>
+                                <input type="text" id="adminEventName" class="form-control" placeholder="e.g. National Primary Election 2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="adminCandidates">Candidates (Comma-Separated)</label>
+                                <input type="text" id="adminCandidates" class="form-control" placeholder="Alice, Bob, Charlie, Diana" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">➕ Create Election Event</button>
+                        </form>
                     </div>
 
-                    <div id="tallyContainer" class="tally-container">
-                        <div class="empty-state">Select or run an election to view candidate vote breakdown.</div>
-                    </div>
-
-                    <div class="proof-distribution-bar">
-                        <div class="dist-label">Proving Track Distribution:</div>
-                        <div class="stacked-bar">
-                            <div id="barGroth16" class="segment groth16-segment" style="width: 50%;">Groth16 (50%)</div>
-                            <div id="barLattice" class="segment lattice-segment" style="width: 50%;">QRZ-KPA Lattice (50%)</div>
+                    <!-- Merkle Tree & Contract Controls -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>Merkle Tree & Contract Governance</h3>
+                            <span class="badge badge-purple">State Mutation</span>
                         </div>
-                    </div>
-                </section>
-
-                <!-- Anomaly Alert Feed -->
-                <section class="glass-card anomaly-section">
-                    <div class="card-header">
-                        <div>
-                            <h2>AI Anomaly Detection Feed</h2>
-                            <p class="card-subtitle">IsolationForest ML model streaming telemetry analysis</p>
+                        <div class="info-group">
+                            <label>Active Election:</label>
+                            <select id="adminElectionSelect" class="form-control"></select>
                         </div>
-                        <span class="live-pill">LIVE MONITOR</span>
-                    </div>
-
-                    <div id="anomalyFeed" class="anomaly-feed">
-                        <div class="empty-state green-state">
-                            <div class="empty-icon">✓</div>
-                            <p>No anomalous activity detected. All submission parameters nominal.</p>
+                        <div class="info-group" style="margin-top: 12px;">
+                            <label>Current Merkle Root:</label>
+                            <code id="adminMerkleRoot">0x0000000000000000000000000000000000000000000000000000000000000000</code>
                         </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Bottom Section: Public Zero-PII Audit Log -->
-            <section class="glass-card audit-section">
-                <div class="card-header">
-                    <div>
-                        <h2>Public Zero-PII Audit Ledger</h2>
-                        <p class="card-subtitle">Verifiable proof logs published to ledger — Voter identity strictly anonymous</p>
-                    </div>
-                    <div class="demo-actions">
-                        <button id="btnSimulateVote" class="btn btn-outline btn-sm">+ Cast Test Vote</button>
-                        <button id="btnSimulateAttack" class="btn btn-danger-outline btn-sm">⚡ Simulate Anomaly</button>
+                        <div class="btn-group" style="margin-top: 20px;">
+                            <button id="btnSyncMerkleRoot" class="btn btn-outline">🌳 Sync Root to Contract</button>
+                            <button id="btnCloseElection" class="btn btn-danger">🔒 Close Election</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Nullifier Hash</th>
-                                <th>Proving System</th>
-                                <th>Transaction Hash</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="auditTableBody">
-                            <tr>
-                                <td colspan="5" class="empty-table">No votes recorded on ledger yet.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Voter Registration Queue -->
+                <div class="card card-glass" style="margin-top: 24px;">
+                    <div class="card-title">
+                        <h3>Pending Voter Registrations Queue</h3>
+                        <span class="badge badge-warning" id="pendingCountBadge">0 Pending</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Voter Identity</th>
+                                    <th>Commitment Hash</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRegistrationTableBody">
+                                <tr><td colspan="5" class="text-muted">No registrations found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =============================================================== -->
+            <!-- TAB 3: ANALYTICS & ANOMALY DASHBOARD -->
+            <!-- =============================================================== -->
+            <section id="tabAnalytics" class="tab-content">
+                <!-- KPI SUMMARY CARDS -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🗳️</div>
+                        <div class="kpi-data">
+                            <span class="kpi-value" id="kpiTotalVotes">0</span>
+                            <span class="kpi-label">Total Votes Cast</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">⚡</div>
+                        <div class="kpi-data">
+                            <span class="kpi-value" id="kpiGroth16Votes">0</span>
+                            <span class="kpi-label">Groth16 Proofs (Classical)</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🛡️</div>
+                        <div class="kpi-data">
+                            <span class="kpi-value" id="kpiLatticeVotes">0</span>
+                            <span class="kpi-label">QRZ-KPA Lattice (PQC)</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">⚠️</div>
+                        <div class="kpi-data">
+                            <span class="kpi-value" id="kpiAnomalyCount">0</span>
+                            <span class="kpi-label">Flagged Anomalies</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Live Tally Breakdown -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>Live Candidate Vote Distribution</h3>
+                            <span class="badge badge-emerald">Real-Time Aggregation</span>
+                        </div>
+                        
+                        <div id="tallyContainer" class="tally-container">
+                            <div class="empty-state">No votes recorded yet.</div>
+                        </div>
+
+                        <div class="proof-ratio-box">
+                            <label>Dual-Track Proof Distribution:</label>
+                            <div class="ratio-bar">
+                                <div class="ratio-segment groth16" id="barGroth16" style="width: 50%;">Groth16 (50%)</div>
+                                <div class="ratio-segment lattice" id="barLattice" style="width: 50%;">QRZ-KPA (50%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Anomaly Feed -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>AI Isolation Forest Anomaly Stream</h3>
+                            <div class="btn-group-sm">
+                                <button id="btnSimulateValid" class="btn btn-sm btn-outline">⚡ Simulate Vote</button>
+                                <button id="btnSimulateAttack" class="btn btn-sm btn-danger">⚠️ Simulate Attack</button>
+                            </div>
+                        </div>
+
+                        <div class="anomaly-feed" id="anomalyFeed">
+                            <div class="feed-item normal">
+                                <span class="feed-status">NORMAL</span>
+                                <div class="feed-details">
+                                    <code class="tx-hash">0x8f72a...91b</code>
+                                    <span class="metric">Latency: 120ms | Risk: 0.04</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zero-PII Audit Ledger -->
+                <div class="card card-glass" style="margin-top: 24px;">
+                    <div class="card-title">
+                        <h3>Zero-PII Public Audit Ledger</h3>
+                        <span class="badge badge-purple">On-Chain Verified</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nullifier Hash $H(S, \text{id})$</th>
+                                    <th>Proof Scheme</th>
+                                    <th>Transaction Hash</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTableBody">
+                                <tr><td colspan="5" class="text-muted">No audit entries available.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =============================================================== -->
+            <!-- TAB 4: INDEPENDENT VERIFIER -->
+            <!-- =============================================================== -->
+            <section id="tabVerifier" class="tab-content">
+                <div class="section-header">
+                    <h2>Zero-Trust Independent Election Verifier</h2>
+                    <p>Re-evaluate all zero-knowledge proofs, Merkle roots, nullifiers, timestamps, and tally math off-chain without trusting backend operators.</p>
+                </div>
+
+                <div class="card card-glass">
+                    <div class="card-title">
+                        <h3>Run 6-Point Election Audit</h3>
+                        <span class="badge badge-cyan">Zero-Trust Audit Engine</span>
+                    </div>
+
+                    <div class="verifier-controls">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="verifierElectionSelect">Target Election ID</label>
+                            <select id="verifierElectionSelect" class="form-control"></select>
+                        </div>
+                        <button id="btnRunVerifier" class="btn btn-primary btn-lg" style="margin-top: 24px;">🔍 Run Election Audit</button>
+                    </div>
+
+                    <div id="verifierResults" class="verifier-results hidden">
+                        <div class="verifier-status-banner" id="verifierStatusBanner">
+                            <span class="status-icon">✓</span>
+                            <span class="status-title" id="verifierStatusTitle">Election Integrity: VERIFIED</span>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top: 20px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Verification Invariant</th>
+                                        <th>Status</th>
+                                        <th>Audit Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="verifierTableBody">
+                                    <!-- Rendered Audit Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="btn-group" style="margin-top: 20px;">
+                            <button id="btnExportAuditJson" class="btn btn-outline">📥 Export Audit Report (JSON)</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =============================================================== -->
+            <!-- TAB 5: KEY VAULT & GOVERNANCE -->
+            <!-- =============================================================== -->
+            <section id="tabKeyVault" class="tab-content">
+                <div class="section-header">
+                    <h2>Cryptographic Key Vault & Governance</h2>
+                    <p>Formal specification and live status of election public keys, Shamir $k$-of-$n$ threshold secret sharing, and time-locked decryption.</p>
+                </div>
+
+                <div class="keyvault-grid">
+                    <!-- Key Governance Card -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>Active Election Public Key</h3>
+                            <span class="badge badge-emerald">Published on Ledger</span>
+                        </div>
+
+                        <div class="code-box">
+                            <label>Election Public Key ($pk_{\text{election}}$):</label>
+                            <code id="vaultPublicKey">0x049a8...f31</code>
+                        </div>
+
+                        <div class="info-grid" style="margin-top: 16px;">
+                            <div class="info-item">
+                                <span class="info-label">Cryptographic Scheme:</span>
+                                <strong>Hybrid Kyber-768 + ECIES</strong>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Time-Lock Status:</span>
+                                <span id="vaultTimeLockStatus" class="badge badge-warning">LOCKED (Voting Active)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Threshold Key Shares Card -->
+                    <div class="card card-glass">
+                        <div class="card-title">
+                            <h3>$k$-of-$n$ Shamir Secret Sharing Trustees</h3>
+                            <span class="badge badge-purple">Threshold k=3, n=5</span>
+                        </div>
+                        <p class="card-desc">The private tally key $sk_{\text{election}}$ is split into 5 key shares. A quorum of at least 3 trustees is required to decrypt tallies after closure.</p>
+
+                        <div class="trustee-list">
+                            <div class="trustee-item">
+                                <span class="trustee-id">Trustee 1 (Election Commission):</span>
+                                <span class="badge badge-emerald">Share Held</span>
+                            </div>
+                            <div class="trustee-item">
+                                <span class="trustee-id">Trustee 2 (Neutral Auditor):</span>
+                                <span class="badge badge-emerald">Share Held</span>
+                            </div>
+                            <div class="trustee-item">
+                                <span class="trustee-id">Trustee 3 (Public Scrutineer):</span>
+                                <span class="badge badge-emerald">Share Held</span>
+                            </div>
+                            <div class="trustee-item">
+                                <span class="trustee-id">Trustee 4 (Academic Observer):</span>
+                                <span class="badge badge-emerald">Share Held</span>
+                            </div>
+                            <div class="trustee-item">
+                                <span class="trustee-id">Trustee 5 (Civil Rights Watch):</span>
+                                <span class="badge badge-emerald">Share Held</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

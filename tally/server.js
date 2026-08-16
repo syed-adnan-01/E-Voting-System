@@ -163,6 +163,31 @@ app.get("/audit-log/:election_id", (req, res) => {
     });
 });
 
+// GET /verify-election/:election_id — Execute Independent Verifier audit
+app.get("/verify-election/:election_id", (req, res) => {
+    const eid = String(req.params.election_id);
+    const { exec } = require("child_process");
+    const tmpFile = path.join(__dirname, `../scratch_audit_${eid}_${Date.now()}.json`);
+    const regUrl = process.env.REGISTRAR_URL || "http://localhost:4000";
+    const tallyUrl = `http://localhost:${PORT}`;
+    const cmd = `./venv/bin/python verifier/verify_election.py --election ${eid} --registrar-url ${regUrl} --tally-url ${tallyUrl} --export-json ${tmpFile}`;
+
+    exec(cmd, { cwd: path.join(__dirname, "..") }, (error, stdout, stderr) => {
+        let report = null;
+        if (fs.existsSync(tmpFile)) {
+            try {
+                report = JSON.parse(fs.readFileSync(tmpFile, "utf8"));
+                fs.unlinkSync(tmpFile);
+            } catch (e) {}
+        }
+        if (report) {
+            res.json({ success: true, ...report, stdout });
+        } else {
+            res.status(500).json({ success: false, error: stderr || error?.message || "Verification failed", stdout });
+        }
+    });
+});
+
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Tallying Service running on http://localhost:${PORT}`);
