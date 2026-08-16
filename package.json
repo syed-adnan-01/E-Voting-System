@@ -13,6 +13,8 @@
     "test:security:fuzz": "./venv/bin/python security/fuzz/fuzz_merkle_proofs.py && ./venv/bin/python security/fuzz/fuzz_public_signals.py && ./venv/bin/python security/fuzz/fuzz_lattice_proofs.py",
     "test:security": "npm run test:security:contracts && npm run test:security:services && npm run test:security:protocol && npm run test:security:fuzz",
     "test:e2e": "(cd contracts && NODE_PATH=node_modules npx hardhat run ../scripts/run_e2e_election.js)",
+    "verify:election": "./venv/bin/python verifier/verify_election.py",
+    "test:verifier": "./venv/bin/pytest test/test_verifier.py",
     "demo": "./run_demo.sh",
     "start:registrar": "npm --prefix registrar start",
     "start:tally": "npm --prefix tally start",
