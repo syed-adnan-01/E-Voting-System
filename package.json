@@ -15,6 +15,7 @@
     "test:e2e": "(cd contracts && NODE_PATH=node_modules npx hardhat run ../scripts/run_e2e_election.js)",
     "verify:election": "./venv/bin/python verifier/verify_election.py",
     "test:verifier": "./venv/bin/pytest test/test_verifier.py",
+    "test:keys": "./venv/bin/pytest test/test_key_management.py",
     "demo": "./run_demo.sh",
     "start:registrar": "npm --prefix registrar start",
     "start:tally": "npm --prefix tally start",
