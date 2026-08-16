@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote — Public Auditor & Verifier</title>
+    <meta name="description" content="Public Zero-Trust Verifier & Live Election Analytics: Real-time candidate tallies, Groth16 vs QRZ-KPA Lattice split, AI anomaly stream, and 6-point election integrity auditor.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- NAVBAR -->
+        <header class="navbar">
+            <div class="brand" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <div class="logo-shield">📊</div>
+                <div class="brand-info">
+                    <h1>PQ-ZKVote <span class="version-tag">Public Auditor</span></h1>
+                    <p>Zero-Trust Election Verification & Analytics</p>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-outline btn-sm" onclick="window.location.href='index.html'">🏠 Landing Gateway</button>
+            </div>
+        </header>
+
+        <main class="main-container">
+            <div class="section-header">
+                <h2>Public Election Analytics & Independent Verifier</h2>
+                <p>Anyone can independently verify election integrity against the ledger without trusting central backend infrastructure.</p>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Settled Votes</div>
+                    <div class="kpi-value" id="kpiTotalVotes">0</div>
+                    <div class="kpi-sub">On-Chain Smart Contract Ledger</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Groth16 Proofs (Classical)</div>
+                    <div class="kpi-value text-cyan" id="kpiGroth16Votes">0</div>
+                    <div class="kpi-sub">Pairing-Based BN254</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">QRZ-KPA Proofs (PQC)</div>
+                    <div class="kpi-value text-purple" id="kpiLatticeVotes">0</div>
+                    <div class="kpi-sub">Post-Quantum Lattice Equation</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Flagged Anomalies</div>
+                    <div class="kpi-value text-gold" id="kpiAnomalyCount">0</div>
+                    <div class="kpi-sub">AI Isolation Forest Stream</div>
+                </div>
+            </div>
+
+            <!-- Proof Scheme Distribution Bar -->
+            <div class="card card-glass" style="margin-top: 20px;">
+                <div class="card-title">
+                    <h3>Proof Scheme Hybrid Split Ratio</h3>
+                    <span class="badge badge-purple">Groth16 vs QRZ-KPA Lattice</span>
+                </div>
+                <div class="ratio-bar-container">
+                    <div class="ratio-bar-fill ratio-groth16" id="barGroth16" style="width: 50%;">Groth16 (50%)</div>
+                    <div class="ratio-bar-fill ratio-lattice" id="barLattice" style="width: 50%;">QRZ-KPA Lattice (50%)</div>
+                </div>
+            </div>
+
+            <div class="grid-2col" style="margin-top: 24px;">
+                <!-- Live Candidate Tally -->
+                <div class="card card-glass">
+                    <div class="card-title">
+                        <h3>Live Candidate Tally</h3>
+                        <span class="badge badge-emerald">Real-Time Aggregation</span>
+                    </div>
+                    <div id="tallyContainer">
+                        <div class="empty-state">Loading candidate breakdown...</div>
+                    </div>
+                </div>
+
+                <!-- AI Anomaly Detection Feed -->
+                <div class="card card-glass">
+                    <div class="card-title">
+                        <h3>AI Anomaly Stream</h3>
+                        <span class="badge badge-gold">Isolation Forest ML</span>
+                    </div>
+                    <div class="anomaly-feed" id="anomalyFeed">
+                        <div class="empty-state">No anomalies detected in active vote stream.</div>
+                    </div>
+                    <div class="btn-group" style="margin-top: 16px;">
+                        <button id="btnSimulateValid" class="btn btn-sm btn-outline">Simulate Valid Submission</button>
+                        <button id="btnSimulateAttack" class="btn btn-sm btn-danger">Simulate Attack Submission</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zero-Trust Independent Verifier Section -->
+            <div class="card card-glass" style="margin-top: 24px;">
+                <div class="card-title">
+                    <h3>🛡️ Independent Zero-Trust Election Verifier</h3>
+                    <span class="badge badge-emerald">Off-Chain Verifier CLI</span>
+                </div>
+                <p class="card-desc">
+                    Re-verify election proof integrity, nullifier uniqueness, timestamp validity, and tally math independently.
+                </p>
+
+                <div class="form-row" style="display: flex; gap: 12px; align-items: center;">
+                    <select id="verifierElectionSelect" class="form-control" style="max-width: 300px;"></select>
+                    <button id="btnRunVerifier" class="btn btn-gradient">🔍 Run 6-Point Audit</button>
+                </div>
+
+                <div id="verifierResults" class="verifier-results-box hidden" style="margin-top: 20px;">
+                    <div class="verifier-status-banner verified" id="verifierStatusBanner">
+                        <h4 id="verifierStatusTitle">Election Integrity: VERIFIED ✓</h4>
+                    </div>
+
+                    <table class="data-table" style="margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th>Verification Check Item</th>
+                                <th>Result</th>
+                                <th>Details & Evidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verifierTableBody"></tbody>
+                    </table>
+
+                    <button id="btnExportAuditJson" class="btn btn-outline btn-block" style="margin-top: 16px;">📥 Export Signed Audit Report (JSON)</button>
+                </div>
+            </div>
+
+            <!-- Public Audit Log -->
+            <div class="card card-glass" style="margin-top: 24px;">
+                <div class="card-title">
+                    <h3>Zero-PII On-Chain Audit Log</h3>
+                    <span class="badge badge-cyan">Ledger Transactions</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Index</th>
+                                <th>Nullifier Hash $H(S, \text{id})$</th>
+                                <th>Proof Scheme</th>
+                                <th>Tx Hash</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr><td colspan="5" class="text-muted">Loading audit entries...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="public.js"></script>
+</body>
+</html>

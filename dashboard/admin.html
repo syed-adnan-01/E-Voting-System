@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote — Admin Console</title>
+    <meta name="description" content="Election Administrator Console: Manage election events, approve pending voter registrations, sync smart contract Merkle roots, and close elections.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- NAVBAR -->
+        <header class="navbar">
+            <div class="brand" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <div class="logo-shield">👑</div>
+                <div class="brand-info">
+                    <h1>PQ-ZKVote <span class="version-tag">Admin Console</span></h1>
+                    <p>Authenticated Election Governance Portal</p>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-outline btn-sm" onclick="logoutAdmin()">🔒 Logout Admin</button>
+                <button class="btn btn-outline btn-sm" onclick="window.location.href='index.html'">🏠 Landing Gateway</button>
+            </div>
+        </header>
+
+        <main class="main-container">
+            <div class="section-header">
+                <h2>Election Administrator Control Panel</h2>
+                <p>Manage election events, approve voter eligibility registrations, sync smart contract state, and trigger time-locked election closure.</p>
+            </div>
+
+            <div class="admin-grid">
+                <!-- Create Election Card -->
+                <div class="card card-glass">
+                    <div class="card-title">
+                        <h3>Create New Election Event</h3>
+                        <span class="badge badge-cyan">Event Setup</span>
+                    </div>
+                    <form id="formCreateEvent">
+                        <div class="form-group">
+                            <label for="adminEventName">Election Name</label>
+                            <input type="text" id="adminEventName" class="form-control" placeholder="e.g. National Primary Election 2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminCandidates">Candidates (Comma-Separated)</label>
+                            <input type="text" id="adminCandidates" class="form-control" placeholder="Alice, Bob, Charlie, Diana" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">➕ Create Election Event</button>
+                    </form>
+                </div>
+
+                <!-- Merkle Tree & Contract Controls -->
+                <div class="card card-glass">
+                    <div class="card-title">
+                        <h3>Merkle Tree & Contract Governance</h3>
+                        <span class="badge badge-purple">State Mutation</span>
+                    </div>
+                    <div class="info-group">
+                        <label>Active Election Event:</label>
+                        <select id="adminElectionSelect" class="form-control"></select>
+                    </div>
+                    <div class="info-group" style="margin-top: 12px;">
+                        <label>Current Merkle Root:</label>
+                        <code id="adminMerkleRoot">0x0000000000000000000000000000000000000000000000000000000000000000</code>
+                    </div>
+                    <div class="btn-group" style="margin-top: 20px;">
+                        <button id="btnSyncMerkleRoot" class="btn btn-outline">🌳 Sync Root to Contract</button>
+                        <button id="btnCloseElection" class="btn btn-danger">🔒 Close Election</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voter Registration Queue -->
+            <div class="card card-glass" style="margin-top: 24px;">
+                <div class="card-title">
+                    <h3>Pending Voter Registrations Queue</h3>
+                    <span class="badge badge-warning" id="pendingCountBadge">0 Pending</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Voter Identity</th>
+                                <th>Commitment Hash $H(S)$</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRegistrationTableBody">
+                            <tr><td colspan="5" class="text-muted">Loading pending registrations...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

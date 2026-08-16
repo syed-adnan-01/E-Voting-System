@@ -1,140 +1,36 @@
 {
   "tallies": {
     "1": {
-      "total_votes": 20,
+      "total_votes": 3,
       "candidate_totals": {
-        "0": 5,
-        "1": 5,
-        "2": 5,
-        "3": 5
+        "0": 2,
+        "1": 1
       },
       "proof_types": {
-        "groth16": 10,
-        "lattice": 10
+        "groth16": 2,
+        "lattice": 1
       }
     }
   },
   "auditLogs": {
     "1": [
       {
-        "nullifier_hash": "0x7e0a14553765113dc5ac53e4561108e37dd2f28546e0bebff5c97b9d83d3c3b0",
-        "proof_type": "lattice",
-        "tx_hash": "0x124ed864787f69f79d8e0c3af51ae05e1c34e7767d9ec942ff7a2634d37d8f8d",
-        "timestamp": 1786863658007
-      },
-      {
-        "nullifier_hash": "0xc864002b9a4733358831673e59e47d771f892b74f1e080f94af507d422a5e86f",
-        "proof_type": "lattice",
-        "tx_hash": "0xc45d190becacbb3b4f572a7585995ced64eafece7b4392d9f3eba3fa2d912dce",
-        "timestamp": 1786863657995
-      },
-      {
-        "nullifier_hash": "0x2ed334de7feecdfa1b863fbef19d53190a106dc721b5c6c4d989e65ced16e4d8",
-        "proof_type": "lattice",
-        "tx_hash": "0xc1032199ae62b618b566cc796c99481d71fbdacc8f46ad4eeee6a543fde9441d",
-        "timestamp": 1786863657984
-      },
-      {
-        "nullifier_hash": "0xd2e8ef60fc9b316d6dc5b5229c6fc05f70a4f5410545d336e64bb37374f6a4be",
-        "proof_type": "lattice",
-        "tx_hash": "0x9a238009f30777a15237f8be58c1cb804527fed1e9efa569f24388d918c08bc2",
-        "timestamp": 1786863657974
-      },
-      {
-        "nullifier_hash": "0x9710f8ad02e5ffa51c66a5b6be6a89e183f29c4ff5cd1cc22bb134c7e46145e2",
-        "proof_type": "lattice",
-        "tx_hash": "0x4c088711b8e1521b114f9cb1a0e41d157dcbc3535bdd89ab06e8d6f33fd9089a",
-        "timestamp": 1786863657960
-      },
-      {
-        "nullifier_hash": "0xefd7145f00fac699b6aab2ee3159dab344342b29c2c1d3eb81ad340323dfc6c8",
-        "proof_type": "lattice",
-        "tx_hash": "0x632394122190d4681b14c5a3cbad503bd504b6750ad4eaa263f0b6f050dadce4",
-        "timestamp": 1786863657950
-      },
-      {
-        "nullifier_hash": "0xc9292ec534c2220ed39a49410abd9b57626e9c1356bb3985160e25bb9b8b5845",
-        "proof_type": "lattice",
-        "tx_hash": "0x14ace94a067cc7b7fa34e9999b09fe317b4bd0ad5dd322e7fae8d77af4d2d14d",
-        "timestamp": 1786863657938
-      },
-      {
-        "nullifier_hash": "0x3738995c45ce9de75e59a599148626780536e7a05da903480edc71b1d31ee99e",
-        "proof_type": "lattice",
-        "tx_hash": "0x45ebd8d4c9aecaed695afa912cd67a4bc8d813f4d496e5aa1ffe325ba4445815",
-        "timestamp": 1786863657926
-      },
-      {
-        "nullifier_hash": "0x2c0bad0b67c3a866a08ac9da498b872b0c10c8ff625bf1042a6be798e70aa1e7",
-        "proof_type": "lattice",
-        "tx_hash": "0x5175a6a31018db17e1d6e860e66dd6f58a37a69239655afc1973542109e8d070",
-        "timestamp": 1786863657917
-      },
-      {
-        "nullifier_hash": "0xabdb58ccbb6bcc02eebbec9b38547e0eea9db5a6b9882a12dc78eaf3ce05d57d",
-        "proof_type": "lattice",
-        "tx_hash": "0x4fabfcf2a987beb53a8d1989981c3a6cd7bad021e281030819da78e3aa9c5d53",
-        "timestamp": 1786863657902
-      },
-      {
-        "nullifier_hash": "0x215a1c4669bd6c25c17bfc44ba353e4ef1b7179189606788be6ddb31c2403e78",
+        "nullifier_hash": "0x94de29b0951d813cb42fe2674ca24fc000586b1e5951414be392f92d8cf80e4d1",
         "proof_type": "groth16",
-        "tx_hash": "0x27b64cb37552cb68bbfff8c18f58b7c902a339357b22b292a910c2f2e3246483",
-        "timestamp": 1786863657888
+        "tx_hash": "0x61841d6ba1135d652575f84d9deb18aa770349e352a4eab06a0cbf607e873827",
+        "timestamp": 1786871747485
       },
       {
-        "nullifier_hash": "0x0e39ab8fcec3a84919378556f748ddd87fe92fa5f1f0c45342441762c0bf21be",
+        "nullifier_hash": "0x5a0aed32d35ad799c47c2c9dd5187ddc65af50d1f601f9865bb11c0191084bd0",
         "proof_type": "groth16",
-        "tx_hash": "0xbdd7c5a86c33cba7cefc6d864fcba8ed73a7b72e28cd27837ec46b8da3ad14d1",
-        "timestamp": 1786863656761
+        "tx_hash": "0xd208a42097003f7a8994bfb40fa2c9f30d32b2f4d52b2a1516b271ad43dedf81",
+        "timestamp": 1786857607952
       },
       {
-        "nullifier_hash": "0x22c4fd6662e1e4a18608b1d4d899dee787117d7dd79e01071f4254977e6d14db",
-        "proof_type": "groth16",
-        "tx_hash": "0x78c0c74a349ff2c28d38b07c40042ff04c9258757b5738143e4d7a93e3634d3b",
-        "timestamp": 1786863655661
-      },
-      {
-        "nullifier_hash": "0x0675c46efbcce4d3288df0531265c14bee2711000c37796ec499b80bee2f5971",
-        "proof_type": "groth16",
-        "tx_hash": "0x21e00db11af11daf89d9973643af1b9f68dbc082146ed4498754bbbb89e10a50",
-        "timestamp": 1786863654541
-      },
-      {
-        "nullifier_hash": "0x0d47e0729bd0e5314f1f503ab37b0f77ec06d8b0f4e0ef79a6345c8f54db49b0",
-        "proof_type": "groth16",
-        "tx_hash": "0x342d236336cb3b9d5801ed34ec8c020b6aebe4ba657af46bbaf58ddfe3f13634",
-        "timestamp": 1786863653430
-      },
-      {
-        "nullifier_hash": "0x00e762aba4ee840d6fdff1d05315c2586aec81c3db34c28e6dbc2a33c2c25b16",
-        "proof_type": "groth16",
-        "tx_hash": "0xe77e678e347d1344328822cd26b7e95c8660bf8a20308a92047fa29fc39d43b8",
-        "timestamp": 1786863652322
-      },
-      {
-        "nullifier_hash": "0x20dcfbaa2ba36a43d8c028e8965c6835031d33495e66ca4dd715c89d2e337453",
-        "proof_type": "groth16",
-        "tx_hash": "0x26485f3068c5f6fb4ea725e579e289bb1a1f8a9fd99173049f7c58b88a3838f5",
-        "timestamp": 1786863651221
-      },
-      {
-        "nullifier_hash": "0x02e956b51ef6ef988bfa00208895474446b2fe60d034e80a835bf7b9e0f5a921",
-        "proof_type": "groth16",
-        "tx_hash": "0x588555de94f6404e8a3168498f21ebb4c66ffd6f5203c18034bdf8056b5e97ce",
-        "timestamp": 1786863650161
-      },
-      {
-        "nullifier_hash": "0x16852f343387686a2b818eb8bf513b8cb6c05a1ce019d1f9558d6fe4999936fe",
-        "proof_type": "groth16",
-        "tx_hash": "0xc9a1df2ff267aa2945d5851fed0d810684c61d5169d7722f15033f79ba9903e2",
-        "timestamp": 1786863649049
-      },
-      {
-        "nullifier_hash": "0x289ac9b80e3f9472d5cd94a64be2277e5353c3a301d1a7ffbe061f858a51e90b",
-        "proof_type": "groth16",
-        "tx_hash": "0x31d162d85deb8b0af8d77d7cc09d9c9f658761ab0cd102cd50c31741f58adc49",
-        "timestamp": 1786863647745
+        "nullifier_hash": "0x646dbb55925705f71f412faeca71483a28b602e0227bf5a693c6991e93ec5163",
+        "proof_type": "lattice",
+        "tx_hash": "0xc474b478279bc5cefb8b2e2c491713951224dee22904e19a5d5362b60aff4a5c",
+        "timestamp": 1786857602723
       }
     ]
   }

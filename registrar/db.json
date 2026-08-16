@@ -9,8 +9,8 @@
       ],
       "open_at": "2026-08-16T05:09:15.181Z",
       "close_at": "2026-08-23T05:09:15.181Z",
-      "merkle_root": "0x2416e5299f791b3e575e48db5023a761e658bba0a391b5fa78a5b20bf6aaa8a1",
-      "status": "active",
+      "merkle_root": "0x052396b47912c08c6a2552a58ab99011199b927631f338bc904fef958e797c31",
+      "status": "closed",
       "created_at": "2026-08-16T05:09:15.181Z"
     },
     {
@@ -43,9 +43,18 @@
       "election_id": "1",
       "commitment": "0x2b37c11ab87dbddc85ace42fb748c849ede418b52e5365899954f6d186c76903",
       "proof_of_identity": "EMP001",
-      "status": "pending",
-      "leaf_index": null,
+      "status": "approved",
+      "leaf_index": 1,
       "created_at": "2026-08-16T07:28:03.860Z"
+    },
+    {
+      "id": "3",
+      "election_id": "1",
+      "commitment": "0x0918752dd09fe694e39f26b3e71640e4bb0c6caecfe7ec62b43d79572c6b3ec8",
+      "proof_of_identity": "1434",
+      "status": "approved",
+      "leaf_index": 2,
+      "created_at": "2026-08-16T09:15:26.455Z"
     }
   ],
   "merkle_leaves": [
@@ -53,6 +62,16 @@
       "election_id": "1",
       "leaf_index": 0,
       "commitment": "21398108543970399943830558284824396734271869767416860222927316681586665157728"
+    },
+    {
+      "election_id": "1",
+      "leaf_index": 1,
+      "commitment": "0x2b37c11ab87dbddc85ace42fb748c849ede418b52e5365899954f6d186c76903"
+    },
+    {
+      "election_id": "1",
+      "leaf_index": 2,
+      "commitment": "0x0918752dd09fe694e39f26b3e71640e4bb0c6caecfe7ec62b43d79572c6b3ec8"
     }
   ]
 }

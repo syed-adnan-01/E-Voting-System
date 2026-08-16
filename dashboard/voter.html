@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQ-ZKVote — Dedicated Voter Station</title>
+    <meta name="description" content="Anonymous Voter Portal: Generate 256-bit local secret, register Poseidon commitment, and cast dual-track zero-knowledge vote.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- NAVBAR -->
+        <header class="navbar">
+            <div class="brand" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <div class="logo-shield">🗳️</div>
+                <div class="brand-info">
+                    <h1>PQ-ZKVote <span class="version-tag">Voter Station</span></h1>
+                    <p>Anonymous Zero-Knowledge Voting Portal</p>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">🏠 Landing Gateway</button>
+            </div>
+        </header>
+
+        <main class="main-container">
+            <div class="wizard-header">
+                <h2>Anonymous Voter Portal</h2>
+                <p>Cast your vote with zero-knowledge proof of eligibility and single-vote nullifier without exposing your identity.</p>
+
+                <!-- STEP INDICATOR BAR -->
+                <div class="wizard-steps">
+                    <div class="step-pill active" id="stepPill1">1. Secret Gen</div>
+                    <div class="step-pill" id="stepPill2">2. Register</div>
+                    <div class="step-pill" id="stepPill3">3. Status</div>
+                    <div class="step-pill" id="stepPill4">4. Cast Vote</div>
+                    <div class="step-pill" id="stepPill5">5. Receipt</div>
+                </div>
+            </div>
+
+            <!-- STEP 1: Secret Generation -->
+            <div id="voterStep1" class="card card-glass">
+                <div class="card-title">
+                    <h3>Step 1: Client-Side Cryptographic Secret</h3>
+                    <span class="badge badge-cyan">256-Bit Hardware Entropy</span>
+                </div>
+                <p class="card-desc">Your voting secret is generated strictly inside your browser RAM. It is never transmitted to any server or admin.</p>
+                
+                <div class="code-box">
+                    <label>Your Local Voter Secret (256-Bit Scalar):</label>
+                    <div class="secret-row">
+                        <code id="secretDisplay">Generating 256-bit secret...</code>
+                        <button id="btnToggleSecret" class="btn btn-sm btn-outline">👁️ Reveal</button>
+                    </div>
+                    <label style="margin-top: 12px;">Poseidon Commitment Hash $H(S)$:</label>
+                    <code id="commitmentDisplay">Calculating Poseidon commitment...</code>
+                </div>
+
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Security Notice:</strong> Download your secret backup keyfile now. Lost secrets cannot be recovered or re-issued by anyone.
+                </div>
+
+                <div class="btn-group">
+                    <button id="btnGenerateNewSecret" class="btn btn-outline">🎲 Generate New Secret</button>
+                    <button id="btnDownloadBackup" class="btn btn-outline">📥 Download Backup</button>
+                    <button id="btnProceedToStep2" class="btn btn-primary">Proceed to Registration →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Registration -->
+            <div id="voterStep2" class="card card-glass hidden">
+                <div class="card-title">
+                    <h3>Step 2: Register Voter Commitment</h3>
+                    <span class="badge badge-purple">Eligibility Verification</span>
+                </div>
+                <p class="card-desc">Select an active election and submit your Poseidon commitment hash to the registrar.</p>
+
+                <form id="formRegisterVoter">
+                    <div class="form-group">
+                        <label for="voterElectionSelect">Select Election Event</label>
+                        <select id="voterElectionSelect" class="form-control" required>
+                            <option value="">Loading active elections...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voterIdentityInput">Voter Identity / Student-Employee ID</label>
+                        <input type="text" id="voterIdentityInput" class="form-control" placeholder="e.g. STU-2026-9874" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Submit Commitment for Approval</button>
+                </form>
+            </div>
+
+            <!-- STEP 3: Approval Status -->
+            <div id="voterStep3" class="card card-glass hidden">
+                <div class="card-title">
+                    <h3>Step 3: Registration Approval Status</h3>
+                    <span id="voterStatusPill" class="badge badge-warning">PENDING</span>
+                </div>
+                <p class="card-desc" id="voterStatusDesc">Your registration has been submitted. Waiting for election admin approval...</p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Commitment Hash:</span>
+                        <code id="voterStatusCommitment">...</code>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Merkle Leaf Index:</span>
+                        <strong id="voterStatusLeaf">Unassigned</strong>
+                    </div>
+                </div>
+
+                <button id="btnRefreshVoterStatus" class="btn btn-outline btn-block">🔄 Refresh Approval Status</button>
+            </div>
+
+            <!-- STEP 4: Cast ZK Vote -->
+            <div id="voterStep4" class="card card-glass hidden">
+                <div class="card-title">
+                    <h3>Step 4: Cast Anonymous Zero-Knowledge Vote</h3>
+                    <span class="badge badge-emerald">Dual-Track Proof Generation</span>
+                </div>
+                <p class="card-desc">Select your candidate choice and cryptographic proof scheme to encrypt and submit your vote.</p>
+
+                <form id="formCastVote">
+                    <label class="form-label">Select Candidate Choice:</label>
+                    <div class="candidates-grid" id="voterCandidatesGrid">
+                        <!-- Rendered Candidate Cards -->
+                    </div>
+
+                    <label class="form-label" style="margin-top: 20px;">Select Zero-Knowledge Proof Scheme:</label>
+                    <div class="scheme-grid">
+                        <label class="scheme-card selected" id="schemeGroth16">
+                            <input type="radio" name="proofScheme" value="0" checked hidden>
+                            <div class="scheme-title">Track 1: Classical Groth16</div>
+                            <div class="scheme-desc">snarkjs / circom Pairing Verification (Succinct & Fast)</div>
+                        </label>
+                        <label class="scheme-card" id="schemeLattice">
+                            <input type="radio" name="proofScheme" value="1" hidden>
+                            <div class="scheme-title">Track 2: Post-Quantum QRZ-KPA</div>
+                            <div class="scheme-desc">Lattice Ring Equation $\|z\|_\infty \le 6144$ (Quantum-Resistant)</div>
+                        </label>
+                    </div>
+
+                    <button type="submit" id="btnSubmitVote" class="btn btn-success btn-block btn-lg" disabled>
+                        🔒 Encrypt Payload & Submit ZK Vote
+                    </button>
+                </form>
+            </div>
+
+            <!-- STEP 5: Receipt -->
+            <div id="voterStep5" class="card card-glass hidden">
+                <div class="card-title">
+                    <h3>Vote Successfully Settled On-Chain! 🎉</h3>
+                    <span class="badge badge-emerald">Settled</span>
+                </div>
+
+                <div class="receipt-card">
+                    <div class="receipt-row">
+                        <span>Nullifier Hash $H(S, \text{id})$:</span>
+                        <code id="receiptNullifier">0x...</code>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Election ID:</span>
+                        <strong id="receiptElectionId">#1</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Transaction Hash:</span>
+                        <code id="receiptTxHash">0x...</code>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Proof Scheme:</span>
+                        <span id="receiptProofType" class="badge badge-purple">Groth16</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Timestamp:</span>
+                        <span id="receiptTimestamp">Just now</span>
+                    </div>
+                </div>
+
+                <p class="card-desc" style="margin-top: 16px;">
+                    Your nullifier guarantees single-vote integrity while your identity and vote choice remain completely secret.
+                </p>
+
+                <button id="btnVerifyReceipt" class="btn btn-primary btn-block" onclick="window.location.href='public.html'">🛡️ Audit Vote on Public Verifier →</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="voter.js"></script>
+</body>
+</html>
