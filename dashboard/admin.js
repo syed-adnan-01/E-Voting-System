@@ -77,8 +77,90 @@ async function loadAdminData() {
         if (regData.success && regData.registrations) {
             renderAdminRegistrations(regData.registrations);
         }
+
+        await checkAdminWinnerBanner(activeId);
     } catch (err) {
         console.error("Admin load error:", err);
+    }
+}
+
+function getOrComputeWinner(tallyData) {
+    if (tallyData && tallyData.winner) return tallyData.winner;
+    if (!tallyData || !tallyData.candidate_totals || !tallyData.total_votes || tallyData.total_votes === 0) return null;
+
+    const totals = tallyData.candidate_totals;
+    const total = tallyData.total_votes;
+    let maxVotes = -1;
+    let winners = [];
+
+    Object.keys(totals).forEach(idx => {
+        const count = totals[idx];
+        if (count > maxVotes) {
+            maxVotes = count;
+            winners = [idx];
+        } else if (count === maxVotes && maxVotes > 0) {
+            winners.push(idx);
+        }
+    });
+
+    if (maxVotes <= 0 || winners.length === 0) return null;
+
+    return {
+        winning_indices: winners,
+        max_votes: maxVotes,
+        is_tie: winners.length > 1,
+        percentage: Math.round((maxVotes / total) * 100)
+    };
+}
+
+async function checkAdminWinnerBanner(electionId) {
+    const TALLY_URL = "http://localhost:4002";
+    const container = document.getElementById("adminWinnerBannerContainer");
+    if (!container) return;
+
+    try {
+        const tallyRes = await fetch(`${TALLY_URL}/tally/${electionId}`);
+        const tallyData = await tallyRes.json();
+        const event = electionsMap[String(electionId)];
+        const winner = getOrComputeWinner(tallyData);
+
+        if (!tallyData.success || !winner) {
+            container.classList.add("hidden");
+            return;
+        }
+
+        const isClosed = event && event.status === "closed";
+        const candidates = (event && event.candidates) ? event.candidates : ["Alice", "Bob", "Charlie", "Diana"];
+        container.classList.remove("hidden");
+
+        if (winner.is_tie) {
+            const tieNames = winner.winning_indices.map(i => candidates[Number(i)] || `Candidate #${Number(i)+1}`).join(" & ");
+            container.innerHTML = `
+                <div class="winner-banner tie">
+                    <div class="winner-icon">🤝</div>
+                    <div class="winner-details">
+                        <span class="badge badge-warning">${isClosed ? 'ELECTION CLOSED — OFFICIAL TIE RESULT' : 'CURRENT LEADING TIE'}</span>
+                        <h3>Election #${electionId} ${isClosed ? 'Final Result' : 'Current Leader'}: ${escapeHtml(tieNames)} (TIE)</h3>
+                        <p>Tied with <strong>${winner.max_votes} votes each</strong> out of ${tallyData.total_votes} total votes cast.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            const winnerIdx = Number(winner.winning_indices[0]);
+            const winnerName = candidates[winnerIdx] || `Candidate #${winnerIdx + 1}`;
+            container.innerHTML = `
+                <div class="winner-banner">
+                    <div class="winner-icon">🏆</div>
+                    <div class="winner-details">
+                        <span class="badge badge-${isClosed ? 'emerald' : 'cyan'}">${isClosed ? 'ELECTION CLOSED — CERTIFIED WINNER ANNOUNCEMENT' : 'CURRENT LEADING CANDIDATE'}</span>
+                        <h3>Election #${electionId} ${isClosed ? 'Winner' : 'Leader'}: ${escapeHtml(winnerName)} 🎉</h3>
+                        <p>${isClosed ? 'Declared Winner' : 'Currently Leading'} with <strong>${winner.max_votes} votes</strong> out of ${tallyData.total_votes} total votes (${winner.percentage}%).</p>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (e) {
+        container.classList.add("hidden");
     }
 }
 

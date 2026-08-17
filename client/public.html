@@ -35,6 +35,28 @@
                 <p>Anyone can independently verify election integrity against the ledger without trusting central backend infrastructure.</p>
             </div>
 
+            <!-- Election Selector Bar -->
+            <div class="card card-glass" style="margin-bottom: 24px; padding: 18px 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700;">Select Election Event to Inspect</h3>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Switch between active and closed elections to inspect live tallies, zero-trust proofs, and winner results.</p>
+                    </div>
+                    <select id="publicElectionSelect" class="form-control" style="max-width: 340px; font-weight: 600; font-size: 14px; border-color: var(--primary);"></select>
+                </div>
+            </div>
+
+            <!-- All Elections Summary Grid -->
+            <div class="card card-glass" style="margin-bottom: 24px;">
+                <div class="card-title">
+                    <h3>All Election Events Overview</h3>
+                    <span class="badge badge-purple">Multi-Election Results</span>
+                </div>
+                <div class="role-grid" id="allElectionsSummaryGrid" style="margin-top: 16px;">
+                    <div class="empty-state">Loading all election results...</div>
+                </div>
+            </div>
+
             <!-- KPI Summary Cards -->
             <div class="kpi-grid">
                 <div class="kpi-card">
@@ -69,7 +91,8 @@
                     <div class="ratio-bar-fill ratio-groth16" id="barGroth16" style="width: 50%;">Groth16 (50%)</div>
                     <div class="ratio-bar-fill ratio-lattice" id="barLattice" style="width: 50%;">QRZ-KPA Lattice (50%)</div>
                 </div>
-            </div>
+            <!-- Certified Election Winner Announcement Banner -->
+            <div id="winnerBannerContainer" class="hidden" style="margin-top: 20px;"></div>
 
             <div class="grid-2col" style="margin-top: 24px;">
                 <!-- Live Candidate Tally -->

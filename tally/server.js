@@ -133,6 +133,31 @@ app.post("/record-vote", async (req, res) => {
     });
 });
 
+function computeWinner(candidateTotals, totalVotes) {
+    if (!candidateTotals || totalVotes === 0) return null;
+    let maxVotes = -1;
+    let winners = [];
+
+    Object.keys(candidateTotals).forEach(candidateIdx => {
+        const count = candidateTotals[candidateIdx];
+        if (count > maxVotes) {
+            maxVotes = count;
+            winners = [candidateIdx];
+        } else if (count === maxVotes && maxVotes > 0) {
+            winners.push(candidateIdx);
+        }
+    });
+
+    if (maxVotes <= 0 || winners.length === 0) return null;
+
+    return {
+        winning_indices: winners,
+        max_votes: maxVotes,
+        is_tie: winners.length > 1,
+        percentage: Math.round((maxVotes / totalVotes) * 100)
+    };
+}
+
 // GET /tally/:election_id — Retrieve aggregated vote totals
 app.get("/tally/:election_id", (req, res) => {
     const eid = String(req.params.election_id);
@@ -142,12 +167,15 @@ app.get("/tally/:election_id", (req, res) => {
         proof_types: { groth16: 0, lattice: 0 }
     };
 
+    const winner = computeWinner(tally.candidate_totals, tally.total_votes);
+
     res.json({
         success: true,
         election_id: eid,
         total_votes: tally.total_votes,
         candidate_totals: tally.candidate_totals,
-        proof_types: tally.proof_types
+        proof_types: tally.proof_types,
+        winner
     });
 });
 

@@ -580,3 +580,39 @@ body {
 .hidden { display: none !important; }
 .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 768px) { .grid-2col { grid-template-columns: 1fr; } }
+
+/* WINNER ANNOUNCEMENT BANNER */
+.winner-banner {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(56, 189, 248, 0.15));
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    border-radius: 20px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 24px rgba(52, 211, 153, 0.15);
+    animation: fadeIn 0.4s ease;
+}
+
+.winner-banner.tie {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(192, 132, 252, 0.15));
+    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.15);
+}
+
+.winner-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.winner-details h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 4px 0;
+}
+
+.winner-details p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
