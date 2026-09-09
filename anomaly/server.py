@@ -38,13 +38,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import sqlite3
+
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model", "isolation_forest.pkl")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 ANOMALIES_FILE = os.path.join(RESULTS_DIR, "live_anomalies.json")
+DB_PATH = os.path.join(os.path.dirname(__file__), "../data/pq_zkvote.sqlite")
 
 # Global state
 model = None
 live_anomalies: List[Dict[str, Any]] = []
+
+def init_db():
+    try:
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS anomalies (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    election_id TEXT NOT NULL,
+                    nullifier_hash TEXT NOT NULL,
+                    tx_hash TEXT,
+                    timestamp REAL NOT NULL,
+                    score REAL NOT NULL,
+                    severity TEXT NOT NULL,
+                    reasons TEXT NOT NULL,
+                    reviewed INTEGER DEFAULT 0
+                )
+            """)
+            conn.commit()
+    except Exception as e:
+        print(f"[Anomaly Service] DB init note: {e}")
 
 def load_model_and_storage():
     global model, live_anomalies
@@ -60,12 +84,62 @@ def load_model_and_storage():
         print(f"[Anomaly Service] Warning: Model file not found at {MODEL_PATH}")
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
-    if os.path.exists(ANOMALIES_FILE):
+    init_db()
+
+    # Load from DB first if present
+    try:
+        if os.path.exists(DB_PATH):
+            with sqlite3.connect(DB_PATH) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                rows = cursor.execute("SELECT * FROM anomalies ORDER BY timestamp DESC").fetchall()
+                if rows:
+                    live_anomalies = [
+                        {
+                            "election_id": str(r["election_id"]),
+                            "nullifier_hash": r["nullifier_hash"],
+                            "tx_hash": r["tx_hash"],
+                            "timestamp": r["timestamp"],
+                            "anomaly_score": r["score"],
+                            "severity": r["severity"],
+                            "flag_reason": r["reasons"],
+                            "reviewed": bool(r["reviewed"])
+                        }
+                        for r in rows
+                    ]
+    except Exception as e:
+        print(f"[Anomaly Service] DB load note: {e}")
+
+    # Fallback to JSON file if live_anomalies is still empty
+    if not live_anomalies and os.path.exists(ANOMALIES_FILE):
         try:
             with open(ANOMALIES_FILE, "r") as f:
                 live_anomalies = json.load(f)
         except Exception:
             live_anomalies = []
+
+def save_anomaly_to_db(record: Dict[str, Any]):
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute(
+                """
+                INSERT INTO anomalies (election_id, nullifier_hash, tx_hash, timestamp, score, severity, reasons, reviewed)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(record.get("election_id")),
+                    record.get("nullifier_hash"),
+                    record.get("tx_hash"),
+                    float(record.get("timestamp", 0)),
+                    float(record.get("anomaly_score", 0)),
+                    str(record.get("severity", "MEDIUM")),
+                    str(record.get("flag_reason", "")),
+                    0
+                )
+            )
+            conn.commit()
+    except Exception as e:
+        print(f"[Anomaly Service] DB write error: {e}")
 
 def save_anomalies():
     try:
@@ -185,6 +259,7 @@ def analyze_submission(telemetry: VoteSubmissionTelemetry):
         if not any(a["nullifier_hash"] == telemetry.nullifier_hash and a["election_id"] == str(telemetry.election_id) for a in live_anomalies):
             live_anomalies.insert(0, anomaly_record)
             save_anomalies()
+            save_anomaly_to_db(anomaly_record)
 
     return {
         "success": True,

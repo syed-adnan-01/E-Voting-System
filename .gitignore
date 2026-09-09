@@ -8,6 +8,8 @@ __pycache__/
 # Environment & local settings
 .env
 .env.local
+data/*.sqlite*
+data/
 
 # Circom & ZK build outputs
 build/
