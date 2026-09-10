@@ -5,32 +5,60 @@ const hre = require("hardhat");
 async function main() {
     console.log("=== Deploying PQ-ZKVote Smart Contracts ===");
 
-    const [deployer] = await hre.ethers.getSigners();
-    console.log("Deployer address:", deployer.address);
-    console.log("Account balance:", (await hre.ethers.provider.getBalance(deployer.address)).toString());
+    const signers = await hre.ethers.getSigners();
+    if (!signers || signers.length === 0) {
+        console.error("\n❌ Error: No deployer account configured!");
+        console.error("Please add your PRIVATE_KEY to contracts/.env or the project root .env file.");
+        console.error("Example format: PRIVATE_KEY=\"0xabcdef...\"\n");
+        process.exit(1);
+    }
+    const deployer = signers[0];
+    console.log("Deployer address:              ", deployer.address);
+    const balance = await hre.ethers.provider.getBalance(deployer.address);
+    console.log("Account balance:               ", hre.ethers.formatEther(balance), "ETH");
+
+    if (balance === 0n && hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+        console.error("\n❌ Error: Deployer wallet has 0 ETH on " + hre.network.name + "!");
+        console.error("Please claim free Sepolia testnet ETH from one of the following faucets:");
+        console.error("  1. Google Cloud Web3 Faucet: https://cloud.google.com/application/web3/faucet/ethereum/sepolia");
+        console.error("  2. Alchemy Sepolia Faucet:    https://sepoliafaucet.com/");
+        console.error("  3. QuickNode Faucet:          https://faucet.quicknode.com/ethereum/sepolia\n");
+        process.exit(1);
+    }
 
     // 1. Deploy Groth16Verifier
     const VerifierFactory = await hre.ethers.getContractFactory("Groth16Verifier");
     const verifier = await VerifierFactory.deploy();
     await verifier.waitForDeployment();
     const verifierAddress = await verifier.getAddress();
-    console.log("Groth16Verifier deployed to:", verifierAddress);
+    console.log("Groth16Verifier deployed to:   ", verifierAddress);
 
-    // 2. Initial Merkle Root & Election Parameters
-    // Default initial Merkle root (or placeholder if empty tree)
-    const initialMerkleRoot = process.env.INITIAL_MERKLE_ROOT || "0x0000000000000000000000000000000000000000000000000000000000000000";
+    // 2. Deploy LatticeVerifier
+    const LatticeVerifierFactory = await hre.ethers.getContractFactory("LatticeVerifier");
+    const latticeVerifier = await LatticeVerifierFactory.deploy();
+    await latticeVerifier.waitForDeployment();
+    const latticeVerifierAddress = await latticeVerifier.getAddress();
+    console.log("LatticeVerifier deployed to:  ", latticeVerifierAddress);
+
+    // 3. Initial Merkle Root & Election Parameters
+    const initialMerkleRoot = process.env.INITIAL_MERKLE_ROOT || ("0x" + "0".repeat(64));
     const electionId = process.env.ELECTION_ID || 1;
 
-    // 3. Deploy VotingContract
+    // 4. Deploy VotingContract
     const VotingContractFactory = await hre.ethers.getContractFactory("VotingContract");
-    const votingContract = await VotingContractFactory.deploy(verifierAddress, initialMerkleRoot, electionId);
+    const votingContract = await VotingContractFactory.deploy(
+        verifierAddress,
+        latticeVerifierAddress,
+        initialMerkleRoot,
+        electionId
+    );
     await votingContract.waitForDeployment();
     const votingContractAddress = await votingContract.getAddress();
-    console.log("VotingContract deployed to:", votingContractAddress);
-    console.log("Election ID:", electionId);
-    console.log("Initial Merkle Root:", initialMerkleRoot);
+    console.log("VotingContract deployed to:    ", votingContractAddress);
+    console.log("Election ID:                   ", electionId);
+    console.log("Initial Merkle Root:           ", initialMerkleRoot);
 
-    // 4. Export deployment addresses to JSON artifact
+    // 5. Export deployment addresses to JSON artifact
     const buildDir = path.join(__dirname, "../../build");
     if (!fs.existsSync(buildDir)) {
         fs.mkdirSync(buildDir, { recursive: true });
@@ -40,6 +68,7 @@ async function main() {
         network: hre.network.name,
         chainId: hre.network.config.chainId || 31337,
         verifierAddress,
+        latticeVerifierAddress,
         votingContractAddress,
         electionId,
         merkleRoot: initialMerkleRoot,

@@ -25,6 +25,7 @@
     "start:dashboard": "node dashboard/server.js",
     "compile:contracts": "npm --prefix contracts run compile",
     "deploy:contracts": "npm --prefix contracts run deploy",
+    "deploy:contracts:sepolia": "npm --prefix contracts run deploy -- --network sepolia",
     "prove": "node scripts/prove_vote.js",
     "verify": "node scripts/verify_vote.js",
     "benchmark": "./venv/bin/python benchmarks/run_benchmarks.py",
