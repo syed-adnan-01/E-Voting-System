@@ -2,9 +2,9 @@
    PQ-ZKVote — Public Auditor & Verifier Controller (public.js)
    ========================================================================== */
 
-const REGISTRAR_URL = window.location.origin.includes("localhost") ? "http://localhost:4000" : window.location.origin;
-const TALLY_URL = "http://localhost:4002";
-const ANOMALY_URL = "http://localhost:8000";
+const REGISTRAR_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4000" : window.location.origin;
+const TALLY_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4002" : window.location.origin;
+const ANOMALY_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:8000" : window.location.origin;
 
 let currentElectionId = "1";
 let electionsMap = {};

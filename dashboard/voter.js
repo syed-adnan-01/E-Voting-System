@@ -2,8 +2,8 @@
    PQ-ZKVote — Dedicated Voter Station Controller (voter.js)
    ========================================================================== */
 
-const REGISTRAR_URL = window.location.origin.includes("localhost") ? "http://localhost:4000" : window.location.origin;
-const TALLY_URL = "http://localhost:4002";
+const REGISTRAR_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4000" : window.location.origin;
+const TALLY_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4002" : window.location.origin;
 
 // State
 let voterSecret = "";

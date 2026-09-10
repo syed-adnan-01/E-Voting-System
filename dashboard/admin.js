@@ -2,7 +2,8 @@
    PQ-ZKVote — Dedicated Admin Console Controller (admin.js)
    ========================================================================== */
 
-const REGISTRAR_URL = window.location.origin.includes("localhost") ? "http://localhost:4000" : window.location.origin;
+const REGISTRAR_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4000" : window.location.origin;
+const TALLY_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "5000" ? "http://localhost:4002" : window.location.origin;
 let ADMIN_TOKEN = sessionStorage.getItem("pq_admin_token") || "admin-secret-token";
 let currentElectionId = "1";
 let electionsMap = {};
@@ -114,7 +115,6 @@ function getOrComputeWinner(tallyData) {
 }
 
 async function checkAdminWinnerBanner(electionId) {
-    const TALLY_URL = "http://localhost:4002";
     const container = document.getElementById("adminWinnerBannerContainer");
     if (!container) return;
 

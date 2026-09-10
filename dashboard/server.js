@@ -3,8 +3,15 @@ const path = require("path");
 const fs = require("fs");
 const { exec } = require("child_process");
 
+const registrarApp = require("../registrar/server");
+const tallyApp = require("../tally/server");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Mount Registrar and Tallying API engines onto unified server
+app.use(registrarApp);
+app.use(tallyApp);
 
 app.use(express.static(__dirname));
 

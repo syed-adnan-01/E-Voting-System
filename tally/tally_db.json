@@ -1,0 +1,24 @@
+{
+  "tallies": {
+    "concurrency_vote_test_election": {
+      "total_votes": 1,
+      "candidate_totals": {
+        "0": 1
+      },
+      "proof_types": {
+        "groth16": 1,
+        "lattice": 0
+      }
+    }
+  },
+  "auditLogs": {
+    "concurrency_vote_test_election": [
+      {
+        "nullifier_hash": "0xconcurrent_nullifier_1789038086621_hksehyadyr4",
+        "proof_type": "groth16",
+        "tx_hash": "0xtx_concurrent_1",
+        "timestamp": 1789038086632
+      }
+    ]
+  }
+}
