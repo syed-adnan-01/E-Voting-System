@@ -552,7 +552,7 @@ async function renderAllElectionsSummaryGrid() {
                     <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
                         Total Votes: <strong>${totalVotes}</strong> | Candidates: ${candidates.length}
                     </p>
-                    <div style="background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px;">
+                    <div style="background: var(--code-bg); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px;">
                         <span>${winnerIcon} <strong>${escapeHtml(winnerText)}</strong></span>
                     </div>
                 </div>
