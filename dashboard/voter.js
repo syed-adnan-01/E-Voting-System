@@ -36,10 +36,23 @@ function initVoterSecret() {
     updateSecretDisplay();
 }
 
+const SNARK_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+
 function computeCommitmentHash(secret) {
     let hash = 0n;
-    const bigSecret = BigInt(secret);
-    hash = (bigSecret * 6364136223846793005n + 1442695040888963407n) % 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+    const bigSecret = BigInt(secret) % SNARK_FIELD;
+    hash = (bigSecret * 6364136223846793005n + 1442695040888963407n) % SNARK_FIELD;
+    return "0x" + hash.toString(16).padStart(64, "0");
+}
+
+function computeNullifierHash(secret, electionId) {
+    const bigSecret = BigInt(secret) % SNARK_FIELD;
+    let eidNum = 0n;
+    const eidStr = String(electionId);
+    for (let i = 0; i < eidStr.length; i++) {
+        eidNum = (eidNum * 131n + BigInt(eidStr.charCodeAt(i))) % SNARK_FIELD;
+    }
+    const hash = (bigSecret * 6364136223846793005n + eidNum * 1442695040888963407n + 1013904223n) % SNARK_FIELD;
     return "0x" + hash.toString(16).padStart(64, "0");
 }
 
@@ -254,7 +267,7 @@ async function handleVoteSubmit(e) {
             throw new Error(pathData.error || "Merkle proof path unavailable. Ensure registration is approved.");
         }
 
-        const nullifierHash = "0x" + BigInt(voterSecret + currentElectionId).toString(16).padStart(64, "0");
+        const nullifierHash = computeNullifierHash(voterSecret, currentElectionId);
         const txHash = "0x" + Array.from(window.crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, "0")).join("");
         const encryptedPayload = "0x" + Array.from(window.crypto.getRandomValues(new Uint8Array(48))).map(b => b.toString(16).padStart(2, "0")).join("");
 

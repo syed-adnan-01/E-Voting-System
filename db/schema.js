@@ -58,9 +58,9 @@ async function initSchema(knex) {
         await knex.schema.createTable("audit_logs", (table) => {
             table.increments("id").primary();
             table.string("election_id", 64).notNullable().references("id").inTable("elections").onDelete("CASCADE");
-            table.string("nullifier_hash", 66).notNullable().unique(); // DB-level uniqueness constraint
+            table.string("nullifier_hash", 255).notNullable().unique(); // DB-level uniqueness constraint
             table.string("proof_type", 32).notNullable();
-            table.string("tx_hash", 66).notNullable();
+            table.string("tx_hash", 255).notNullable();
             table.bigInteger("timestamp").notNullable();
             table.text("encrypted_vote").nullable();
 
@@ -73,8 +73,8 @@ async function initSchema(knex) {
         await knex.schema.createTable("anomalies", (table) => {
             table.increments("id").primary();
             table.string("election_id", 64).notNullable();
-            table.string("nullifier_hash", 66).notNullable();
-            table.string("tx_hash", 66).nullable();
+            table.string("nullifier_hash", 255).notNullable();
+            table.string("tx_hash", 255).nullable();
             table.float("timestamp").notNullable();
             table.float("score").notNullable();
             table.string("severity", 16).notNullable();
@@ -83,6 +83,43 @@ async function initSchema(knex) {
 
             table.index(["election_id", "timestamp"]);
         });
+    }
+
+    // 7. Schema migrations for existing databases (e.g., PostgreSQL on Render)
+    if (await knex.schema.hasTable("audit_logs")) {
+        try {
+            await knex.raw("ALTER TABLE audit_logs ALTER COLUMN nullifier_hash TYPE VARCHAR(255);");
+        } catch (e) {}
+        try {
+            await knex.raw("ALTER TABLE audit_logs ALTER COLUMN tx_hash TYPE VARCHAR(255);");
+        } catch (e) {}
+    }
+
+    if (await knex.schema.hasTable("anomalies")) {
+        try {
+            await knex.raw("ALTER TABLE anomalies ALTER COLUMN nullifier_hash TYPE VARCHAR(255);");
+        } catch (e) {}
+        try {
+            await knex.raw("ALTER TABLE anomalies ALTER COLUMN tx_hash TYPE VARCHAR(255);");
+        } catch (e) {}
+    }
+
+    if (await knex.schema.hasTable("elections")) {
+        try {
+            await knex.raw("ALTER TABLE elections ALTER COLUMN merkle_root TYPE VARCHAR(255);");
+        } catch (e) {}
+    }
+
+    if (await knex.schema.hasTable("registrations")) {
+        try {
+            await knex.raw("ALTER TABLE registrations ALTER COLUMN commitment TYPE VARCHAR(255);");
+        } catch (e) {}
+    }
+
+    if (await knex.schema.hasTable("merkle_tree_nodes")) {
+        try {
+            await knex.raw("ALTER TABLE merkle_tree_nodes ALTER COLUMN node_hash TYPE VARCHAR(255);");
+        } catch (e) {}
     }
 }
 

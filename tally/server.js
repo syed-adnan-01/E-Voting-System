@@ -114,6 +114,14 @@ app.post("/record-vote", async (req, res) => {
         const ts = timestamp || Date.now();
         const hash = tx_hash || ("0x" + Math.random().toString(16).substring(2).padStart(64, "0"));
 
+        let cleanNullifier = String(nullifier_hash).trim();
+        // If an unrefreshed client sends a 67-character hex string (0x + 65 hex digits),
+        // normalize to standard 32-byte (66-character) format so independent verifiers pass
+        if (cleanNullifier.startsWith("0x") && cleanNullifier.length === 67) {
+            cleanNullifier = "0x" + cleanNullifier.slice(-64);
+        }
+        const cleanTxHash = String(hash).trim();
+
         let auditRecord;
         let finalTally;
 
@@ -137,7 +145,7 @@ app.post("/record-vote", async (req, res) => {
                 }
 
                 // Check if nullifier already exists
-                const existing = await trx("audit_logs").where({ nullifier_hash }).first();
+                const existing = await trx("audit_logs").where({ nullifier_hash: cleanNullifier }).first();
                 if (existing) {
                     const err = new Error("Nullifier has already been tallied for this election");
                     err.isDuplicateNullifier = true;
@@ -146,17 +154,17 @@ app.post("/record-vote", async (req, res) => {
 
                 // Insert into audit_logs table (enforced by UNIQUE constraint on nullifier_hash)
                 auditRecord = {
-                    nullifier_hash,
+                    nullifier_hash: cleanNullifier,
                     proof_type: pType,
-                    tx_hash: hash,
+                    tx_hash: cleanTxHash,
                     timestamp: ts
                 };
 
                 await trx("audit_logs").insert({
                     election_id: eid,
-                    nullifier_hash,
+                    nullifier_hash: cleanNullifier,
                     proof_type: pType,
-                    tx_hash: hash,
+                    tx_hash: cleanTxHash,
                     timestamp: ts,
                     encrypted_vote: encrypted_vote || null
                 });
@@ -229,8 +237,8 @@ app.post("/record-vote", async (req, res) => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         election_id: eid,
-                        nullifier_hash,
-                        tx_hash: hash,
+                        nullifier_hash: cleanNullifier,
+                        tx_hash: cleanTxHash,
                         timestamp: metrics.timestamp || Math.floor(ts / 1000),
                         verification_latency_ms: metrics.verification_latency_ms || 120.0,
                         gas_price_gwei: metrics.gas_price_gwei || 25.0,
