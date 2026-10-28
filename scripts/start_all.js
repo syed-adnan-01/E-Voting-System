@@ -10,6 +10,7 @@
 
 const { spawn } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
 const services = [
     { name: "REGISTRAR", script: "registrar/server.js", port: 4000, color: "\x1b[34m" },
@@ -90,6 +91,50 @@ try {
     // Non-fatal
 }
 
+// Optionally attempt to spawn Face Recognition Service if available
+try {
+    const faceServiceDir = path.join(__dirname, "../face-service");
+    const facePath = path.join(faceServiceDir, "main.py");
+    const venvPyWin = path.join(faceServiceDir, "venv/Scripts/python.exe");
+    const venvPyUnix = path.join(faceServiceDir, "venv/bin/python");
+    let pyBin = "python";
+    if (fs.existsSync(venvPyWin)) {
+        pyBin = venvPyWin;
+    } else if (fs.existsSync(venvPyUnix)) {
+        pyBin = venvPyUnix;
+    }
+
+    const faceChild = spawn(pyBin, [facePath], {
+        cwd: faceServiceDir,
+        env: { ...process.env, PORT: 8000, HOST: "0.0.0.0" },
+        stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    faceChild.stdout.on("data", (data) => {
+        const lines = data.toString().trim().split("\n");
+        for (const line of lines) {
+            console.log(`\x1b[36m[FACE-SVC ]${RESET} ${line}`);
+        }
+    });
+
+    faceChild.stderr.on("data", (data) => {
+        const lines = data.toString().trim().split("\n");
+        for (const line of lines) {
+            if (!line.includes("ModuleNotFoundError")) {
+                console.log(`\x1b[36m[FACE-SVC ]${RESET} ${line}`);
+            }
+        }
+    });
+
+    faceChild.on("error", () => {
+        // Python or dependencies not installed, continue cleanly
+    });
+
+    processes.push(faceChild);
+} catch (e) {
+    // Non-fatal
+}
+
 setTimeout(() => {
     console.log("\n--------------------------------------------------------------------------");
     console.log("  ALL SERVICES ARE RUNNING! Open your browser to:");
@@ -100,6 +145,7 @@ setTimeout(() => {
     console.log("  • Public Audit Log:         \x1b[36mhttp://localhost:5000/public\x1b[0m");
     console.log("  • Registrar REST API:       \x1b[36mhttp://localhost:4000\x1b[0m");
     console.log("  • Tallying REST API:        \x1b[36mhttp://localhost:4002\x1b[0m");
+    console.log("  • Face Recognition API:     \x1b[36mhttp://localhost:8000\x1b[0m");
     console.log("--------------------------------------------------------------------------");
     console.log("  Press Ctrl + C to stop all services.\n");
 }, 1500);

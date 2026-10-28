@@ -114,9 +114,94 @@ function setupEventListeners() {
 
     document.getElementById("btnRefreshVoterStatus").addEventListener("click", checkVoterRegistrationStatus);
 
+    // Voter Face Capture Listeners
+    setupVoterFaceListeners();
+
     // Form Submissions
     document.getElementById("formRegisterVoter").addEventListener("submit", handleRegisterSubmit);
     document.getElementById("formCastVote").addEventListener("submit", handleVoteSubmit);
+}
+
+// State for voter face capture
+let voterCapturedImages = [];
+let isVoterCamActive = false;
+
+function setupVoterFaceListeners() {
+    const btnToggleCam = document.getElementById("btnToggleVoterCam");
+    const btnCaptureSamples = document.getElementById("btnCaptureVoterSamples");
+    const camSection = document.getElementById("voterWebcamSection");
+    const videoEl = document.getElementById("voterEnrollCam");
+    const progressBar = document.getElementById("voterEnrollProgressBar");
+    const progressText = document.getElementById("voterEnrollProgressText");
+    const statusBox = document.getElementById("voterFaceStatus");
+    const faceBadge = document.getElementById("voterFaceBadge");
+
+    if (!btnToggleCam) return;
+
+    btnToggleCam.addEventListener("click", async () => {
+        if (!isVoterCamActive) {
+            try {
+                btnToggleCam.disabled = true;
+                btnToggleCam.textContent = "Connecting...";
+                await VoterFaceCapture.startWebcam(videoEl);
+                camSection.classList.remove("hidden");
+                btnCaptureSamples.classList.remove("hidden");
+                btnToggleCam.textContent = "❌ Close Camera";
+                btnToggleCam.disabled = false;
+                isVoterCamActive = true;
+            } catch (err) {
+                btnToggleCam.disabled = false;
+                btnToggleCam.textContent = "📷 Enable Camera";
+                statusBox.className = "alert alert-warning";
+                statusBox.textContent = `Camera error: ${err.message}. You may still register with your ID.`;
+                statusBox.classList.remove("hidden");
+            }
+        } else {
+            VoterFaceCapture.stopWebcam(videoEl);
+            camSection.classList.add("hidden");
+            btnCaptureSamples.classList.add("hidden");
+            btnToggleCam.textContent = "📷 Enable Camera";
+            isVoterCamActive = false;
+        }
+    });
+
+    btnCaptureSamples.addEventListener("click", async () => {
+        btnCaptureSamples.disabled = true;
+        btnCaptureSamples.textContent = "Capturing...";
+        statusBox.className = "alert alert-info";
+        statusBox.textContent = "📸 Capturing 5 biometric samples... Please look straight at the camera.";
+        statusBox.classList.remove("hidden");
+
+        try {
+            const images = await VoterFaceCapture.captureEnrollmentBurst(
+                videoEl,
+                5,
+                700,
+                (curr, total) => {
+                    const pct = Math.round((curr / total) * 100);
+                    progressBar.style.width = `${pct}%`;
+                    progressText.textContent = `Captured sample ${curr} of ${total}`;
+                }
+            );
+
+            voterCapturedImages = images;
+            VoterFaceCapture.stopWebcam(videoEl);
+            camSection.classList.add("hidden");
+            btnCaptureSamples.classList.add("hidden");
+            btnToggleCam.textContent = "🔄 Retake Face Photos";
+            isVoterCamActive = false;
+
+            statusBox.className = "alert alert-success";
+            statusBox.textContent = "✅ 5 face samples captured. They will be submitted for ephemeral admin verification.";
+            faceBadge.textContent = "Biometrics Ready";
+            faceBadge.className = "badge badge-emerald";
+        } catch (err) {
+            btnCaptureSamples.disabled = false;
+            btnCaptureSamples.textContent = "📸 Capture 5 Face Samples";
+            statusBox.className = "alert alert-warning";
+            statusBox.textContent = `Capture issue: ${err.message}`;
+        }
+    });
 }
 
 function switchVoterStep(stepNum) {
@@ -157,10 +242,37 @@ async function handleRegisterSubmit(e) {
     e.preventDefault();
     const electionId = document.getElementById("voterElectionSelect").value;
     const voterId = document.getElementById("voterIdentityInput").value.trim();
+    const submitBtn = document.getElementById("btnSubmitRegistration");
 
     if (!electionId || !voterId) return;
 
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting Registration...";
+    }
+
     try {
+        let derivedFaceId = null;
+
+        // If voter captured biometric frames, enroll them under short derived hash
+        if (voterCapturedImages && voterCapturedImages.length >= 3) {
+            try {
+                derivedFaceId = await VoterFaceCapture.deriveFaceId(commitmentHash);
+                console.log("[voter] Enrolling biometric profile for face_id:", derivedFaceId);
+                const enrollRes = await VoterFaceCapture.enrollVoterFace(
+                    REGISTRAR_URL,
+                    derivedFaceId,
+                    voterCapturedImages
+                );
+                if (enrollRes.success) {
+                    localStorage.setItem("pq_voter_face_id", derivedFaceId);
+                }
+            } catch (faceErr) {
+                console.warn("[voter] Optional face enrollment failed:", faceErr.message);
+                // Non-blocking: voter can still register with identity proof
+            }
+        }
+
         const res = await fetch(`${REGISTRAR_URL}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -180,6 +292,11 @@ async function handleRegisterSubmit(e) {
         }
     } catch (err) {
         alert("Server connection failed: " + err.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Commitment for Approval";
+        }
     }
 }
 

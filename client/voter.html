@@ -94,7 +94,36 @@
                         <input type="text" id="voterIdentityInput" class="form-control" placeholder="e.g. STU-2026-9874" required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block">Submit Commitment for Approval</button>
+                    <!-- Optional Biometric Identity Verification Block -->
+                    <div class="face-verification-card" style="margin: 20px 0; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; background: rgba(15, 23, 42, 0.4);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-weight: 600; font-size: 14px; margin: 0; color: #fff;">📸 Biometric Identity Verification (Optional)</label>
+                            <span class="badge badge-cyan" id="voterFaceBadge">Ephemeral Review</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">
+                            Capture your face to assist the administrator during eligibility verification. In compliance with ZK privacy (FR1.5), your face profile is strictly ephemeral and deleted immediately upon approval or rejection.
+                        </p>
+
+                        <div id="voterWebcamSection" class="hidden">
+                            <div class="camera-box" style="max-width: 360px; height: 240px; margin: 10px auto; position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid rgba(99, 102, 241, 0.4);">
+                                <video id="voterEnrollCam" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                                <div class="face-reticle" style="position: absolute; width: 140px; height: 180px; border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 50% 50% 45% 45%; pointer-events: none; top: calc(50% - 90px); left: calc(50% - 70px);"></div>
+                            </div>
+                            <div class="enroll-progress-container" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; margin: 8px 0;">
+                                <div id="voterEnrollProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4); transition: width 0.3s ease;"></div>
+                            </div>
+                            <p id="voterEnrollProgressText" style="font-size: 11px; color: #94a3b8; text-align: right; margin-bottom: 8px;">Ready to capture 5 photos</p>
+                        </div>
+
+                        <div id="voterFaceStatus" class="alert alert-info hidden" style="font-size: 12px; padding: 8px 12px; margin-bottom: 10px;"></div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="btnToggleVoterCam" class="btn btn-sm btn-outline">📷 Enable Camera</button>
+                            <button type="button" id="btnCaptureVoterSamples" class="btn btn-sm btn-primary hidden">📸 Capture 5 Face Samples</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitRegistration" class="btn btn-primary btn-block">Submit Commitment for Approval</button>
                 </form>
             </div>
 
@@ -193,6 +222,7 @@
         </main>
     </div>
 
+    <script src="face-capture.js"></script>
     <script src="voter.js"></script>
 </body>
 </html>

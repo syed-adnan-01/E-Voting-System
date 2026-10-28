@@ -21,6 +21,7 @@
                 </div>
             </div>
             <div class="auth-status" id="authStatus">
+                <span class="biometric-tag hidden" id="faceAuthTag">🔐 Face Verified</span>
                 <span class="status-indicator active"></span>
                 <span id="authText">Authenticated</span>
                 <button id="logoutBtn" class="btn btn-outline btn-sm">Logout</button>
@@ -31,15 +32,77 @@
         <main class="main-content">
             <!-- Auth Gate Modal -->
             <section id="authSection" class="card auth-card">
-                <div class="card-header">
-                    <h2>Admin Authentication</h2>
-                    <p>Enter the administrator token to access registration management and election controls.</p>
+                <!-- Step 1: Security Token -->
+                <div id="tokenStep">
+                    <div class="card-header">
+                        <div>
+                            <span class="auth-step-badge">Step 1 of 2</span>
+                            <h2>Admin Token Authentication</h2>
+                        </div>
+                    </div>
+                    <p class="step-desc">Enter the administrator token to begin the two-factor authentication process.</p>
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label for="tokenInput">Admin Security Token</label>
+                        <input type="password" id="tokenInput" placeholder="Enter admin token (default: admin-secret-token)" value="admin-secret-token">
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary btn-block">Continue to Face Verification →</button>
                 </div>
-                <div class="form-group">
-                    <label for="tokenInput">Admin Security Token</label>
-                    <input type="password" id="tokenInput" placeholder="Enter admin token (default: admin-secret-token)" value="admin-secret-token">
+
+                <!-- Step 2: Face Verification (Enrolled Admin) -->
+                <div id="faceVerifyStep" class="hidden">
+                    <div class="card-header">
+                        <div>
+                            <span class="auth-step-badge">Step 2 of 2</span>
+                            <h2>🔐 Face Verification</h2>
+                        </div>
+                    </div>
+                    <p class="step-desc">Position your face within the frame and blink naturally to satisfy anti-spoofing liveness checks.</p>
+                    
+                    <div class="camera-box" id="verifyCameraBox">
+                        <video id="adminVerifyCam" autoplay muted playsinline></video>
+                        <div class="face-reticle"></div>
+                        <div class="scan-beam"></div>
+                    </div>
+
+                    <div id="faceVerifyFeedback" class="status-feedback info">
+                        <span>👁️ Align face in frame and blink naturally.</span>
+                    </div>
+
+                    <div class="btn-row">
+                        <button id="btnBackToToken" class="btn btn-outline">← Back</button>
+                        <button id="btnScanFace" class="btn btn-primary" style="flex: 1;">Scan Face & Log In</button>
+                    </div>
                 </div>
-                <button id="loginBtn" class="btn btn-primary btn-block">Authenticate & Access Dashboard</button>
+
+                <!-- Step 2: First-Time Face Enrollment (If Not Yet Enrolled) -->
+                <div id="faceEnrollStep" class="hidden">
+                    <div class="card-header">
+                        <div>
+                            <span class="auth-step-badge">Initial Setup</span>
+                            <h2>📸 Face Enrollment</h2>
+                        </div>
+                    </div>
+                    <p class="step-desc">No admin biometric profile found. Capture 5 photos in good lighting to enroll your face for 2FA.</p>
+                    
+                    <div class="camera-box" id="enrollCameraBox">
+                        <video id="adminEnrollCam" autoplay muted playsinline></video>
+                        <div class="face-reticle"></div>
+                    </div>
+
+                    <div class="enroll-progress-container">
+                        <div id="enrollProgressBar" class="enroll-progress-bar"></div>
+                    </div>
+                    <p id="enrollProgressText" class="progress-label">Ready to capture 5 face samples</p>
+
+                    <div id="faceEnrollFeedback" class="status-feedback info">
+                        <span>💡 Ensure good lighting and face camera directly.</span>
+                    </div>
+
+                    <div class="btn-row">
+                        <button id="btnEnrollBackToToken" class="btn btn-outline">← Back</button>
+                        <button id="btnStartEnroll" class="btn btn-primary" style="flex: 1;">Start Face Capture (5 photos)</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Dashboard View -->
@@ -75,6 +138,19 @@
                             <p class="empty-state">Loading election events...</p>
                         </div>
                     </section>
+
+                    <!-- Admin Biometric Security Card -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h2>Admin Biometric Security</h2>
+                            <span class="badge-count" id="faceProfileBadge">Checking...</span>
+                        </div>
+                        <p class="section-desc">Multi-factor biometric verification protects election operations and voter approvals.</p>
+                        <div class="item-actions" style="margin-top: 14px;">
+                            <button id="btnReEnrollFace" class="btn btn-outline btn-sm">Re-enroll Face</button>
+                            <button id="btnResetFaceProfile" class="btn btn-danger btn-sm">Reset Biometric Profile</button>
+                        </div>
+                    </section>
                 </div>
 
                 <!-- Right Column: Pending Voter Registrations -->
@@ -99,8 +175,57 @@
                 </div>
             </div>
         </main>
+
+        <!-- Modal for Voter Live Face Verification -->
+        <div id="voterFaceModal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>
+                        <span class="auth-step-badge">Biometric Audit</span>
+                        <h3>🔍 Voter Live Face Verification</h3>
+                    </div>
+                    <button class="modal-close" onclick="closeVoterFaceModal()">✕</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="voter-details-pill" style="margin-bottom: 14px; font-size: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div><strong>Identity:</strong> <span id="modalVoterId">...</span></div>
+                        <div><strong>Derived Face ID:</strong> <code id="modalFaceId" class="mono-hash">...</code></div>
+                        <div><strong>Commitment:</strong> <span id="modalCommitment" class="mono-hash">...</span></div>
+                    </div>
+
+                    <p class="section-desc">Point camera at the voter. The dual-frame scan verifies liveness and compares 512-dim face embeddings against the enrollment profile.</p>
+
+                    <div class="camera-box" id="modalCameraBox" style="max-width: 360px; height: 240px;">
+                        <video id="modalVoterCam" autoplay muted playsinline></video>
+                        <div class="face-reticle"></div>
+                        <div class="scan-beam"></div>
+                    </div>
+
+                    <div id="modalFaceFeedback" class="status-feedback info">
+                        <span>Align voter in reticle and click "Verify Face Live".</span>
+                    </div>
+
+                    <div id="modalResultBox" class="hidden" style="margin: 12px 0; padding: 12px; border-radius: 8px; background: #f1f5f9; border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; font-weight: 600;">Match Status:</span>
+                            <span id="modalMatchBadge" class="status-pill">...</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;" id="modalScoreText">...</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 8px; margin-top: 16px;">
+                    <button id="btnModalScanFace" class="btn btn-primary btn-sm" style="flex: 1;">📸 Verify Face Live (Dual-Frame)</button>
+                    <button id="btnModalApprove" class="btn btn-success btn-sm hidden">Approve Voter</button>
+                    <button id="btnModalReject" class="btn btn-danger btn-sm hidden">Reject Voter</button>
+                    <button class="btn btn-outline btn-sm" onclick="closeVoterFaceModal()">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="face-ui.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

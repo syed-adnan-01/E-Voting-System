@@ -105,8 +105,56 @@
                 </div>
             </div>
         </main>
+
+        <!-- Voter Face Verification Modal -->
+        <div id="voterFaceModal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div class="modal-card" style="background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; width: 90%; max-width: 480px; padding: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <span class="badge badge-cyan">Biometric Audit</span>
+                        <h3 style="margin-top: 4px; font-size: 18px; color: #fff;">🔍 Voter Live Face Verification</h3>
+                    </div>
+                    <button class="modal-close" onclick="closeVoterFaceModal()" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer;">✕</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="voter-details-pill" style="margin-bottom: 14px; font-size: 12px; background: rgba(30, 41, 59, 0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div><strong>Identity:</strong> <span id="modalVoterId">...</span></div>
+                        <div><strong>Derived Face ID:</strong> <code id="modalFaceId" style="color: #38bdf8;">...</code></div>
+                        <div><strong>Commitment:</strong> <span id="modalCommitment" style="color: #a78bfa; font-family: monospace;">...</span></div>
+                    </div>
+
+                    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Point camera at the voter. The dual-frame scan verifies eye blink liveness and compares 512-dim face embeddings against the enrollment profile.</p>
+
+                    <div class="camera-box" id="modalCameraBox" style="max-width: 360px; height: 240px; margin: 0 auto; position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid rgba(99, 102, 241, 0.4);">
+                        <video id="modalVoterCam" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                        <div class="face-reticle" style="position: absolute; width: 140px; height: 180px; border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 50% 50% 45% 45%; pointer-events: none; top: calc(50% - 90px); left: calc(50% - 70px);"></div>
+                    </div>
+
+                    <div id="modalFaceFeedback" class="alert alert-info" style="margin-top: 12px; font-size: 12px; padding: 8px 12px;">
+                        <span>Align voter in reticle and click "Verify Face Live".</span>
+                    </div>
+
+                    <div id="modalResultBox" class="hidden" style="margin: 12px 0; padding: 12px; border-radius: 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; font-weight: 600;">Match Status:</span>
+                            <span id="modalMatchBadge" class="badge">...</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;" id="modalScoreText">...</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 8px; margin-top: 16px;">
+                    <button id="btnModalScanFace" class="btn btn-primary btn-sm" style="flex: 1;">📸 Verify Face Live (Dual-Frame)</button>
+                    <button id="btnModalApprove" class="btn btn-success btn-sm hidden">Approve Voter</button>
+                    <button id="btnModalReject" class="btn btn-danger btn-sm hidden">Reject Voter</button>
+                    <button class="btn btn-outline btn-sm" onclick="closeVoterFaceModal()">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="face-ui.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

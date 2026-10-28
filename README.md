@@ -52,6 +52,10 @@
    - Real-time `IsolationForest` ML pipeline (`anomaly/server.py`) evaluating vote submission telemetry (latency, gas price, submission intervals) to surface potential attacks without auto-rejecting valid votes.
 5. **Real-Time Live Dashboard**:
    - High-aesthetic dark-mode dashboard (`dashboard/`) showing live vote tallies, proof system breakdown, real-time anomaly alert feed, and zero-PII audit logs.
+6. **Biometric Identity Verification & Admin 2FA (FaceNet)**:
+   - **Admin Multi-Factor Authentication**: Security token + live dual-frame face biometric scan with anti-spoofing eye-blink detection.
+   - **Ephemeral Voter Verification**: Optional biometric review during commitment registration.
+   - **FR1.5 Zero-PII Compliance**: Biometric embeddings are strictly ephemeral and automatically deleted upon approval or rejection.
 
 ---
 
@@ -84,16 +88,22 @@
 
 ## 🏃 Running the Services
 
-Launch each core component in separate terminal windows or as background services:
+Launch all core services together with a single command:
+```bash
+npm start
+```
+
+Or launch individual components in separate terminal windows:
 
 | Component | Command | Endpoint | Description |
 | :--- | :--- | :--- | :--- |
 | **Registrar Service** | `npm run start:registrar` | `http://localhost:4000` | Handles commitment registration & Merkle path queries |
 | **Tallying Service** | `npm run start:tally` | `http://localhost:4002` | Vote aggregation & public zero-PII audit log |
+| **Face Recognition Service** | `npm run start:face` | `http://localhost:8000` | FaceNet biometric enrollment & liveness verification |
 | **Live Anomaly AI Monitor** | `npm run start:anomaly` | `http://localhost:8000` | Real-time IsolationForest anomaly detection API |
-| **Live Dashboard** | `npm run start:dashboard` | `http://localhost:5000` | Real-time web UI dashboard |
-| **Admin Panel** | Open `admin/index.html` in browser | `file:///.../admin/index.html` | Election creation & voter registration approval |
-| **Voter Client** | Open `client/index.html` in browser | `file:///.../client/index.html` | Voter local secret generation, ballot & proof creation |
+| **Unified Portal** | `npm run start:dashboard` | `http://localhost:5000` | Multi-role web portal (Voter, Admin, Dashboard, Audit) |
+| **Admin Panel** | Open `admin/index.html` in browser | `http://localhost:5000/admin` | 2FA Face Login, election setup & registration queue |
+| **Voter Client** | Open `client/index.html` in browser | `http://localhost:5000/voter` | Secret generation, biometric capture & ZK vote casting |
 
 ---
 

@@ -65,3 +65,30 @@ This document tracks known architectural, security, performance, and operational
 
 - **Network Scope**: Designed for local Hardhat node execution and Sepolia testnet demonstration. **Mainnet deployment is explicitly non-goal.**
 - **Scale Horizon**: Evaluated for election sizes up to $N = 10,000$ voters in prototype testing.
+
+---
+
+## 6. Biometric Identity Verification & Facial Recognition (FR1.5 Privacy Model)
+
+### 6.1 Ephemeral Voter Profile Lifecycle & FR1.5 Privacy Guarantee
+- **Constraint**: Voter face samples are collected during Step 2 of registration to assist election administrators in verifying voter identity before admitting commitments to the Merkle tree.
+- **Privacy Enforcement**: Voter face embeddings are indexed exclusively by a one-way deterministic hash of their commitment:
+  $$\text{face\_id} = \text{SHA-256}(\text{commitment})[0..16]$$
+  No real names, citizen IDs, or unencrypted biometric data are linked in the database.
+- **Strict Ephemeral Lifecycle**: In compliance with the **FR1.5 Zero-PII Privacy Mandate**, as soon as an administrator issues an **Approve** or **Reject** decision on a registration, the registrar immediately and automatically executes an HTTP `DELETE /face/profile/{face_id}` to purge all 512-dimensional FaceNet embeddings from memory and disk.
+- **Limitation**: If the face service is temporarily unreachable during the exact second of approval, an offline profile could theoretically linger until manual cleanup. The registrar logs warnings for asynchronous retry.
+
+### 6.2 Admin Multi-Factor Authentication (2FA)
+- **Constraint**: Admin panel access mandates two sequential verification factors:
+  1. Administrative security token (`X-Admin-Token`).
+  2. Live dual-frame face biometric verification against the enrolled `admin-main` profile.
+- **Distinction**: Unlike voters, admin biometric profiles are **permanent** because administrative accountability requires non-anonymous, non-repudiable audit logs.
+
+### 6.3 Anti-Spoofing & Liveness Detection Boundaries
+- **Constraint**: The face service implements dual-frame eye-blink and motion analysis (`check_eye_blink_liveness` with $\Delta t \approx 250\text{--}300\text{ ms}$).
+- **Limitation**: Optical 2D webcams cannot detect advanced 3D silicone mask attacks or synchronized generative AI video stream injections. Production-grade biometric systems require dedicated infrared depth sensors (e.g., Apple TrueDepth or Intel RealSense).
+
+### 6.4 Environmental Bias & Non-Blocking Fallback
+- **Constraint**: FaceNet (Inception-ResNet-v1) and MTCNN face detection performance degrades under poor lighting, harsh shadows, extreme head poses ($> 30^\circ$ yaw/pitch), or heavy optical occlusion.
+- **Design Safeguard**: Biometric face enrollment is **strictly optional and non-blocking**. Voters without access to a webcam or whose face fails detection may still submit their registration using their institutional identity ID string for manual administrator evaluation.
+

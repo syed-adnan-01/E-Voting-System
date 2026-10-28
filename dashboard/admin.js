@@ -182,6 +182,7 @@ function renderAdminRegistrations(regs) {
             <td><span class="badge badge-${r.status === 'approved' ? 'emerald' : r.status === 'rejected' ? 'danger' : 'warning'}">${r.status.toUpperCase()}</span></td>
             <td>
                 ${r.status === 'pending' ? `
+                    <button class="btn btn-sm btn-outline" onclick="openVoterFaceVerifyModal('${r.face_id || ''}', '${r.commitment}', '${escapeHtml(r.proof_of_identity)}')">🔍 Verify Face</button>
                     <button class="btn btn-sm btn-success" onclick="approveReg('${r.commitment}')">Approve</button>
                     <button class="btn btn-sm btn-danger" onclick="rejectReg('${r.commitment}')">Reject</button>
                 ` : `<span class="text-muted">—</span>`}
@@ -217,6 +218,154 @@ window.rejectReg = async function(commitment) {
         alert("Reject error: " + err.message);
     }
 };
+
+// ---------------------------------------------------------------------------
+// Voter Face Verification Modal
+// ---------------------------------------------------------------------------
+let activeVoterCommitment = null;
+let activeVoterFaceId = null;
+
+const voterFaceModal = document.getElementById("voterFaceModal");
+const modalVoterId = document.getElementById("modalVoterId");
+const modalFaceId = document.getElementById("modalFaceId");
+const modalCommitment = document.getElementById("modalCommitment");
+const modalVoterCam = document.getElementById("modalVoterCam");
+const modalCameraBox = document.getElementById("modalCameraBox");
+const modalFaceFeedback = document.getElementById("modalFaceFeedback");
+const modalResultBox = document.getElementById("modalResultBox");
+const modalMatchBadge = document.getElementById("modalMatchBadge");
+const modalScoreText = document.getElementById("modalScoreText");
+const btnModalScanFace = document.getElementById("btnModalScanFace");
+const btnModalApprove = document.getElementById("btnModalApprove");
+const btnModalReject = document.getElementById("btnModalReject");
+
+window.openVoterFaceVerifyModal = async function(faceId, commitment, identity) {
+    activeVoterCommitment = commitment;
+    activeVoterFaceId = faceId;
+
+    if (modalVoterId) modalVoterId.textContent = identity || "Anonymous Identity";
+    if (modalFaceId) modalFaceId.textContent = faceId || "N/A";
+    if (modalCommitment) modalCommitment.textContent = `${commitment.substring(0, 18)}...${commitment.substring(commitment.length - 8)}`;
+
+    if (modalResultBox) modalResultBox.classList.add("hidden");
+    if (btnModalApprove) btnModalApprove.classList.add("hidden");
+    if (btnModalReject) btnModalReject.classList.add("hidden");
+    if (voterFaceModal) voterFaceModal.classList.remove("hidden");
+
+    if (modalFaceFeedback) {
+        modalFaceFeedback.className = "alert alert-info";
+        modalFaceFeedback.textContent = "🔍 Checking if voter enrolled an ephemeral biometric profile...";
+    }
+    if (btnModalScanFace) btnModalScanFace.disabled = true;
+
+    try {
+        const profile = await FaceUI.checkVoterProfile(REGISTRAR_URL, faceId);
+        if (profile.enrolled) {
+            if (modalFaceFeedback) {
+                modalFaceFeedback.className = "alert alert-info";
+                modalFaceFeedback.textContent = `👁️ Enrolled profile found (${profile.embedding_count} vectors). Align voter and click "Verify Face Live".`;
+            }
+            if (modalCameraBox) modalCameraBox.classList.remove("hidden");
+            await FaceUI.startWebcam(modalVoterCam);
+            if (btnModalScanFace) btnModalScanFace.disabled = false;
+        } else {
+            if (modalCameraBox) modalCameraBox.classList.add("hidden");
+            if (modalFaceFeedback) {
+                modalFaceFeedback.className = "alert alert-warning";
+                modalFaceFeedback.textContent = "ℹ️ No biometric profile enrolled by this voter. You may verify identity via student/employee ID and approve or reject.";
+            }
+            if (btnModalApprove) btnModalApprove.classList.remove("hidden");
+            if (btnModalReject) btnModalReject.classList.remove("hidden");
+        }
+    } catch (err) {
+        if (modalFaceFeedback) {
+            modalFaceFeedback.className = "alert alert-danger";
+            modalFaceFeedback.textContent = `Face service error: ${err.message}`;
+        }
+    }
+};
+
+window.closeVoterFaceModal = function() {
+    if (modalVoterCam) FaceUI.stopWebcam(modalVoterCam);
+    if (voterFaceModal) voterFaceModal.classList.add("hidden");
+    activeVoterCommitment = null;
+    activeVoterFaceId = null;
+};
+
+if (btnModalScanFace) {
+    btnModalScanFace.addEventListener("click", async () => {
+        btnModalScanFace.disabled = true;
+        btnModalScanFace.textContent = "Verifying live biometric...";
+        if (modalFaceFeedback) {
+            modalFaceFeedback.className = "alert alert-warning";
+            modalFaceFeedback.textContent = "📸 Scanning dual frames for liveness and computing cosine similarity...";
+        }
+
+        try {
+            const { image, prev_image } = await FaceUI.captureDualFrames(modalVoterCam, 280);
+            const result = await FaceUI.verifyVoter(REGISTRAR_URL, ADMIN_TOKEN, {
+                faceId: activeVoterFaceId,
+                image,
+                prevImage: prev_image
+            });
+
+            btnModalScanFace.disabled = false;
+            btnModalScanFace.textContent = "📸 Verify Face Live (Dual-Frame)";
+
+            if (modalResultBox) modalResultBox.classList.remove("hidden");
+            if (result.matched) {
+                if (modalMatchBadge) {
+                    modalMatchBadge.className = "badge badge-emerald";
+                    modalMatchBadge.textContent = `MATCH CONFIRMED (${result.confidence}%)`;
+                }
+                if (modalScoreText) modalScoreText.textContent = `Cosine Similarity: ${result.similarity} | Distance: ${result.distance} | Anti-spoofing PASSED`;
+                if (modalFaceFeedback) {
+                    modalFaceFeedback.className = "alert alert-success";
+                    modalFaceFeedback.textContent = "✅ Face matches voter enrollment! Ready to approve.";
+                }
+                if (btnModalApprove) btnModalApprove.classList.remove("hidden");
+                if (btnModalReject) btnModalReject.classList.remove("hidden");
+            } else {
+                if (modalMatchBadge) {
+                    modalMatchBadge.className = "badge badge-danger";
+                    modalMatchBadge.textContent = `MATCH FAILED (${result.confidence || 0}%)`;
+                }
+                if (modalScoreText) modalScoreText.textContent = `Result: ${result.message || result.error || "Low similarity"}`;
+                if (modalFaceFeedback) {
+                    modalFaceFeedback.className = "alert alert-danger";
+                    modalFaceFeedback.textContent = `❌ Verification failed: ${result.error || result.message || "Face does not match."}`;
+                }
+                if (btnModalApprove) btnModalApprove.classList.remove("hidden");
+                if (btnModalReject) btnModalReject.classList.remove("hidden");
+            }
+        } catch (err) {
+            btnModalScanFace.disabled = false;
+            btnModalScanFace.textContent = "📸 Verify Face Live (Dual-Frame)";
+            if (modalFaceFeedback) {
+                modalFaceFeedback.className = "alert alert-danger";
+                modalFaceFeedback.textContent = `Verification error: ${err.message}`;
+            }
+        }
+    });
+}
+
+if (btnModalApprove) {
+    btnModalApprove.addEventListener("click", async () => {
+        if (!activeVoterCommitment) return;
+        const comm = activeVoterCommitment;
+        closeVoterFaceModal();
+        await window.approveReg(comm);
+    });
+}
+
+if (btnModalReject) {
+    btnModalReject.addEventListener("click", async () => {
+        if (!activeVoterCommitment) return;
+        const comm = activeVoterCommitment;
+        closeVoterFaceModal();
+        await window.rejectReg(comm);
+    });
+}
 
 async function handleCreateEventSubmit(e) {
     e.preventDefault();

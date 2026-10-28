@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const crypto = require("crypto");
 const db = require("./db");
 const { initPoseidon } = require("../circuits/merkle");
 const { getMerkleProof } = require("../db/incremental_merkle");
@@ -9,8 +10,39 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "admin-secret-token";
 
+// Face Recognition Service Configuration
+const FACE_SERVICE_URL = process.env.FACE_SERVICE_URL || "http://localhost:8000";
+const FACE_SERVICE_SECRET = process.env.FACE_SERVICE_SECRET || "pqzkvote_face_service_secret_2026";
+const ADMIN_FACE_ID = "admin-main";
+
+// Deterministic 16-char voter face identifier derived from commitment
+function deriveFaceId(commitment) {
+    if (!commitment) return "";
+    return crypto.createHash("sha256").update(String(commitment)).digest("hex").substring(0, 16);
+}
+
+// FR1.5 Privacy Guarantee: Delete ephemeral biometric profile upon approval or rejection
+async function cleanupVoterFaceProfile(commitment) {
+    if (!commitment) return;
+    const faceId = deriveFaceId(commitment);
+    try {
+        const response = await fetch(`${FACE_SERVICE_URL}/face/profile/${faceId}`, {
+            method: "DELETE",
+            headers: { "X-Internal-Secret": FACE_SERVICE_SECRET }
+        });
+        if (response.ok) {
+            console.log(`[registrar] Ephemeral face profile deleted for ${faceId} (FR1.5 compliance)`);
+        } else if (response.status !== 404) {
+            console.warn(`[registrar] Ephemeral face cleanup returned HTTP ${response.status} for ${faceId}`);
+        }
+    } catch (err) {
+        // Face service offline or network issue; non-blocking to voting core
+        console.warn(`[registrar] Non-blocking face cleanup notice for ${faceId}:`, err.message);
+    }
+}
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
 
 // Initialize Poseidon instance on server startup
 let poseidonInitialized = false;
@@ -176,6 +208,278 @@ app.post("/admin/login", (req, res) => {
     res.status(401).json({ error: "Invalid admin token" });
 });
 
+// GET /admin/face/profile — Check admin face enrollment status
+app.get("/admin/face/profile", async (req, res) => {
+    try {
+        const response = await fetch(`${FACE_SERVICE_URL}/face/profile/${ADMIN_FACE_ID}`, {
+            headers: { "X-Internal-Secret": FACE_SERVICE_SECRET }
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            return res.status(response.status).json({
+                enrolled: false,
+                error: errData.detail || "Failed to query face service"
+            });
+        }
+        const data = await response.json();
+        res.json({
+            success: true,
+            enrolled: data.enrolled,
+            embedding_count: data.embedding_count,
+            model_version: data.model_version
+        });
+    } catch (err) {
+        console.error("Face service connection error:", err.message);
+        res.status(503).json({
+            enrolled: false,
+            error: "Face recognition service is currently unavailable",
+            offline: true
+        });
+    }
+});
+
+// POST /admin/face/verify — Verify admin face biometric (1:1 matching with liveness)
+app.post("/admin/face/verify", async (req, res) => {
+    try {
+        const { token, image, prev_image } = req.body;
+        if (token !== ADMIN_TOKEN) {
+            return res.status(401).json({ success: false, error: "Invalid admin token" });
+        }
+        if (!image) {
+            return res.status(400).json({ success: false, error: "Face image is required" });
+        }
+
+        const response = await fetch(`${FACE_SERVICE_URL}/face/verify/${ADMIN_FACE_ID}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Internal-Secret": FACE_SERVICE_SECRET
+            },
+            body: JSON.stringify({
+                image,
+                prev_image: prev_image || undefined
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json({
+                success: false,
+                matched: false,
+                error: data.detail || "Face verification failed"
+            });
+        }
+
+        res.json({
+            success: data.matched,
+            matched: data.matched,
+            confidence: data.confidence,
+            similarity: data.similarity,
+            message: data.message
+        });
+    } catch (err) {
+        console.error("Face verification error:", err.message);
+        res.status(503).json({
+            success: false,
+            matched: false,
+            error: "Face recognition service is currently unavailable"
+        });
+    }
+});
+
+// POST /admin/face/enroll — Enroll admin face images (requires admin token)
+app.post("/admin/face/enroll", requireAdmin, async (req, res) => {
+    try {
+        const { images } = req.body;
+        if (!images || !Array.isArray(images) || images.length < 3) {
+            return res.status(400).json({
+                success: false,
+                error: "At least 3 face image samples required for enrollment"
+            });
+        }
+
+        const response = await fetch(`${FACE_SERVICE_URL}/face/enroll/${ADMIN_FACE_ID}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Internal-Secret": FACE_SERVICE_SECRET
+            },
+            body: JSON.stringify({
+                images,
+                subject_id_str: "System Administrator"
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json({
+                success: false,
+                error: data.detail || "Face enrollment failed"
+            });
+        }
+
+        res.json({
+            success: true,
+            embeddings_created: data.embeddings_created,
+            message: data.message
+        });
+    } catch (err) {
+        console.error("Face enrollment error:", err.message);
+        res.status(503).json({
+            success: false,
+            error: "Face recognition service is currently unavailable"
+        });
+    }
+});
+
+// DELETE /admin/face/profile — Reset admin face profile (requires admin token)
+app.delete("/admin/face/profile", requireAdmin, async (req, res) => {
+    try {
+        const response = await fetch(`${FACE_SERVICE_URL}/face/profile/${ADMIN_FACE_ID}`, {
+            method: "DELETE",
+            headers: {
+                "X-Internal-Secret": FACE_SERVICE_SECRET
+            }
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json({
+                success: false,
+                error: data.detail || "Failed to delete face profile"
+            });
+        }
+
+        res.json({ success: true, message: "Admin face profile deleted successfully" });
+    } catch (err) {
+        console.error("Face profile deletion error:", err.message);
+        res.status(503).json({
+            success: false,
+            error: "Face recognition service is currently unavailable"
+        });
+    }
+});
+
+// POST /voter-face/enroll — Enroll voter face images during registration (Public)
+app.post("/voter-face/enroll", async (req, res) => {
+    try {
+        const { face_id, images } = req.body;
+        if (!face_id) {
+            return res.status(400).json({ success: false, error: "Missing face_id parameter" });
+        }
+        if (!images || !Array.isArray(images) || images.length < 3) {
+            return res.status(400).json({
+                success: false,
+                error: "At least 3 face image samples required for enrollment"
+            });
+        }
+
+        const response = await fetch(`${FACE_SERVICE_URL}/face/enroll/${face_id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Internal-Secret": FACE_SERVICE_SECRET
+            },
+            body: JSON.stringify({
+                images,
+                subject_id_str: `Voter-${face_id}`
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json({
+                success: false,
+                error: data.detail || "Voter face enrollment failed"
+            });
+        }
+
+        res.json({
+            success: true,
+            face_id,
+            embeddings_created: data.embeddings_created,
+            message: data.message
+        });
+    } catch (err) {
+        console.error("Voter face enrollment error:", err.message);
+        res.status(503).json({
+            success: false,
+            error: "Face recognition service is currently unavailable"
+        });
+    }
+});
+
+// GET /voter-face/profile/:face_id — Check voter face enrollment status
+app.get("/voter-face/profile/:face_id", async (req, res) => {
+    try {
+        const { face_id } = req.params;
+        const response = await fetch(`${FACE_SERVICE_URL}/face/profile/${face_id}`, {
+            headers: { "X-Internal-Secret": FACE_SERVICE_SECRET }
+        });
+        if (!response.ok) {
+            return res.status(response.status).json({ enrolled: false });
+        }
+        const data = await response.json();
+        res.json({
+            success: true,
+            enrolled: data.enrolled,
+            embedding_count: data.embedding_count
+        });
+    } catch (err) {
+        res.status(503).json({ enrolled: false, error: "Face service offline" });
+    }
+});
+
+// POST /admin/voter-face/verify — Verify voter face against enrolled profile during admin approval (Admin)
+app.post("/admin/voter-face/verify", requireAdmin, async (req, res) => {
+    try {
+        const { face_id, image, prev_image } = req.body;
+        if (!face_id) {
+            return res.status(400).json({ success: false, error: "Missing voter face_id" });
+        }
+        if (!image) {
+            return res.status(400).json({ success: false, error: "Live face image required for verification" });
+        }
+
+        const response = await fetch(`${FACE_SERVICE_URL}/face/verify/${face_id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Internal-Secret": FACE_SERVICE_SECRET
+            },
+            body: JSON.stringify({
+                image,
+                prev_image: prev_image || undefined
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json({
+                success: false,
+                matched: false,
+                error: data.detail || "Voter face verification failed"
+            });
+        }
+
+        res.json({
+            success: true,
+            matched: data.matched,
+            confidence: data.confidence,
+            similarity: data.similarity,
+            distance: data.distance,
+            message: data.message
+        });
+    } catch (err) {
+        console.error("Voter face verification error:", err.message);
+        res.status(503).json({
+            success: false,
+            matched: false,
+            error: "Face recognition service is currently unavailable"
+        });
+    }
+});
+
 // POST /events — Create a new election event (Admin)
 app.post("/events", requireAdmin, async (req, res) => {
     try {
@@ -196,7 +500,11 @@ app.post("/events", requireAdmin, async (req, res) => {
 app.get("/registrations/:election_id", requireAdmin, async (req, res) => {
     try {
         const registrations = await db.getRegistrations(req.params.election_id);
-        res.json({ success: true, registrations });
+        const enhanced = registrations.map(reg => ({
+            ...reg,
+            face_id: deriveFaceId(reg.commitment)
+        }));
+        res.json({ success: true, registrations: enhanced });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -216,6 +524,9 @@ app.post("/registrations/:commitment/approve", requireAdmin, async (req, res) =>
         if (result.alreadyApproved) {
             return res.json({ success: true, message: "Already approved", registration: result.registration });
         }
+
+        // FR1.5 Privacy Mandate: delete voter biometric profile now that decision is finalized
+        await cleanupVoterFaceProfile(commitment);
 
         res.json({
             success: true,
@@ -241,6 +552,10 @@ app.post("/registrations/:commitment/reject", requireAdmin, async (req, res) => 
         }
 
         const updatedReg = await db.updateRegistrationStatus(commitment, "rejected");
+
+        // FR1.5 Privacy Mandate: delete voter biometric profile now that decision is finalized
+        await cleanupVoterFaceProfile(commitment);
+
         res.json({ success: true, message: "Registration rejected.", registration: updatedReg });
     } catch (e) {
         res.status(500).json({ error: e.message });
